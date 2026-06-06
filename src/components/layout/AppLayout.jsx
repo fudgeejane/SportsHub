@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, LogOut, Menu, X } from 'lucide-react'
 import defaultAvatar from '../../assets/default-avatar.svg'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth.jsx'
 import { getAllowedNav, getRoleKey } from '../../routes/navConfig'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
 

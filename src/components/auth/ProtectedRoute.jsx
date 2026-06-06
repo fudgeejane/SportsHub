@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { ROLES, STATUSES } from '../../contexts/AuthContext'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth.jsx'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
 
 export default function ProtectedRoute({ children, allowedRoles }) {
@@ -8,15 +8,11 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   const location = useLocation()
 
   if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-white">
-        <p className="font-semibold text-slate-600">Checking access...</p>
-      </main>
-    )
+    return null
   }
 
   if (!currentUser) {
-    return <Navigate to={PUBLIC_ROUTES.signIn} replace state={{ from: location }} />
+    return <Navigate to={PUBLIC_ROUTES.home} replace state={{ from: location }} />
   }
 
   const adminVerifiedInApp =

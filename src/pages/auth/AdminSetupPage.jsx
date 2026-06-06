@@ -1,10 +1,8 @@
 import { useState } from 'react'
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import { serverTimestamp } from 'firebase/firestore'
 import AuthPageShell from '../../components/auth/AuthPageShell'
-import { ROLES, STATUSES } from '../../contexts/AuthContext'
-import { auth, isFirebaseConfigComplete } from '../../firebase'
-import { createUserRecord } from '../../lib/userService'
+import { ROLES } from '../../contexts/AuthContext'
+import { isFirebaseConfigComplete } from '../../firebase'
+import { createAdminUser } from '../../hooks/useAuth.jsx'
 
 const setupCode = import.meta.env.VITE_ADMIN_SETUP_CODE || 'SPORTSHUB_ADMIN_SETUP'
 
@@ -55,13 +53,11 @@ export default function AdminSetupPage() {
     setLoading(true)
 
     try {
-      const credential = await createUserWithEmailAndPassword(auth, form.email, form.password)
-      await updateProfile(credential.user, { displayName: form.displayName })
-      await createUserRecord(credential.user, ROLES.COMMUNITY_ORGANIZER, form.displayName, {
-        status: STATUSES.APPROVED,
-        emailVerified: true,
-        approvedBy: credential.user.uid,
-        approvedAt: serverTimestamp(),
+      await createAdminUser({
+        email: form.email,
+        password: form.password,
+        displayName: form.displayName,
+        role: ROLES.COMMUNITY_ORGANIZER,
       })
 
       setMessage('Community Organizer admin account created and approved. Sign in to access the organizer dashboard.')

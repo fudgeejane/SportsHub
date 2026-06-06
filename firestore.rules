@@ -10,16 +10,50 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
-    function userDoc(uid) {
-      return get(/databases/$(database)/documents/users/$(uid));
+    function userPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
     }
 
-    function isApprovedOrganizer() {
-      return signedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && userDoc(request.auth.uid).data.role in ['COMMUNITY_ORGANIZER', 'ADMIN']
-        && userDoc(request.auth.uid).data.status == 'APPROVED'
-        && userDoc(request.auth.uid).data.emailVerified == true;
+    function hasUserDoc() {
+      return signedIn() && exists(userPath(request.auth.uid));
+    }
+
+    function currentUser() {
+      return get(userPath(request.auth.uid)).data;
+    }
+
+    function approved() {
+      return hasUserDoc()
+        && currentUser().status == 'APPROVED'
+        && currentUser().emailVerified == true;
+    }
+
+    function hasRole(roles) {
+      return approved() && currentUser().role in roles;
+    }
+
+    function isOrganizer() {
+      return hasRole(['COMMUNITY_ORGANIZER', 'ADMIN']);
+    }
+
+    function isCoach() {
+      return hasRole(['COACH']);
+    }
+
+    function isPlayer() {
+      return hasRole(['PLAYER']);
+    }
+
+    function isFacilitator() {
+      return hasRole(['FACILITATOR']);
+    }
+
+    function readOnlySportsAccess() {
+      return isOrganizer() || isCoach() || isPlayer() || isFacilitator();
+    }
+
+    function teamDoc(teamId) {
+      return get(/databases/$(database)/documents/teams/$(teamId)).data;
     }
 
     match /users/{uid} {
@@ -36,18 +70,90 @@ service cloud.firestore {
         && request.resource.data.role == 'COMMUNITY_ORGANIZER'
         && request.resource.data.approvedBy == request.auth.uid;
 
-      allow read: if isSelf(uid) || isApprovedOrganizer();
+      allow read: if isSelf(uid) || isOrganizer();
 
       allow update: if isSelf(uid)
-        && request.resource.data.diff(resource.data).changedKeys().hasOnly(['emailVerified'])
+        && request.resource.data.role == resource.data.role
         && request.resource.data.status == resource.data.status
-        && request.resource.data.role == resource.data.role;
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'displayName',
+          'age',
+          'gender',
+          'contactNumber',
+          'preferredSport',
+          'skillLevel',
+          'emailVerified',
+          'updatedAt'
+        ]);
 
-      allow update: if isApprovedOrganizer()
+      allow update: if isOrganizer()
         && request.resource.data.role in ['ADMIN', 'COMMUNITY_ORGANIZER', 'COACH', 'FACILITATOR', 'PLAYER']
         && request.resource.data.status in ['PENDING', 'APPROVED', 'REJECTED'];
 
       allow delete: if false;
+    }
+
+    match /sports/{sportId} {
+      allow read: if readOnlySportsAccess();
+      allow create, update, delete: if isOrganizer();
+    }
+
+    match /events/{eventId} {
+      allow read: if readOnlySportsAccess();
+      allow create, update, delete: if isOrganizer();
+    }
+
+    match /teamStructures/{structureId} {
+      allow read: if readOnlySportsAccess();
+      allow create, update, delete: if isOrganizer();
+    }
+
+    match /teams/{teamId} {
+      allow read: if readOnlySportsAccess();
+      allow create: if isOrganizer()
+        || (isCoach()
+          && request.resource.data.coachId == request.auth.uid);
+      allow update: if isOrganizer()
+        || (isCoach()
+          && resource.data.coachId == request.auth.uid
+          && request.resource.data.coachId == request.auth.uid);
+      allow delete: if isOrganizer();
+    }
+
+    match /teamMembers/{memberId} {
+      allow read: if readOnlySportsAccess();
+      allow create: if isOrganizer()
+        || (isCoach()
+          && request.resource.data.coachId == request.auth.uid
+          && teamDoc(request.resource.data.teamId).coachId == request.auth.uid);
+      allow update, delete: if isOrganizer()
+        || (isCoach()
+          && resource.data.coachId == request.auth.uid
+          && teamDoc(resource.data.teamId).coachId == request.auth.uid);
+    }
+
+    match /teamJoinRequests/{requestId} {
+      allow read: if isOrganizer()
+        || isFacilitator()
+        || (isCoach() && resource.data.coachId == request.auth.uid)
+        || (isPlayer() && resource.data.playerId == request.auth.uid);
+
+      allow create: if isPlayer()
+        && request.resource.data.playerId == request.auth.uid
+        && request.resource.data.status == 'PENDING';
+
+      allow update: if isOrganizer()
+        || (isCoach()
+          && resource.data.coachId == request.auth.uid
+          && request.resource.data.coachId == resource.data.coachId
+          && request.resource.data.playerId == resource.data.playerId
+          && request.resource.data.teamId == resource.data.teamId
+          && request.resource.data.status in ['ACCEPTED', 'REJECTED']);
+
+      allow delete: if isOrganizer()
+        || (isPlayer()
+          && resource.data.playerId == request.auth.uid
+          && resource.data.status == 'PENDING');
     }
 
     match /{document=**} {

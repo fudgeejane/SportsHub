@@ -19,7 +19,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: var(--header-height);
+  scroll-padding-top: 0;
 }
 
 body {
@@ -28,27 +28,14 @@ body {
   overflow-x: hidden;
 }
 
-/* Make each top-level section fill the viewport minus the fixed header */
+/* Make each top-level section fill the viewport minus the fixed header. */
 section {
   min-height: calc(100svh - var(--header-height));
   display: block;
 }
 
-/* Ensure anchor navigation accounts for the fixed header */
-@supports (scroll-margin-top: 1px) {
-  section[id] {
-    scroll-margin-top: var(--header-height);
-  }
-}
-
-/* Anchor offset: ensure section headings sit flush under the fixed header
-   when navigating via fragment links, regardless of section padding. */
-section[id]::before {
-  content: "";
-  display: block;
-  height: var(--header-height);
-  margin-top: calc(-1 * var(--header-height));
-  visibility: hidden;
+section[id] {
+  scroll-margin-top: 0;
 }
 
 a {
@@ -72,7 +59,7 @@ summary {
 }
 
 .section-band {
-  padding: 4.25rem 0;
+  padding: 3rem 0 4rem;
 }
 
 .dashboard-shell {
@@ -496,11 +483,11 @@ summary {
 
 @media (max-width: 640px) {
   html {
-    scroll-padding-top: 7.25rem;
+    scroll-padding-top: 0;
   }
 
   .section-band {
-    padding: 3.25rem 0;
+    padding: 2.5rem 0 3.25rem;
   }
 
   .dashboard-shell {
@@ -536,5 +523,11 @@ summary {
   .activity-feed,
   .chart-card {
     min-height: 7rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-height: 4rem;
   }
 }

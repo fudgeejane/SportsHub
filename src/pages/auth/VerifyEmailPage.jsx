@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import AuthPageShell from '../../components/auth/AuthPageShell'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth.jsx'
 
 export default function VerifyEmailPage() {
   const { currentUser, refreshUser, sendEmailVerification } = useAuth()

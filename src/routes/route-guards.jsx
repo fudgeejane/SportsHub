@@ -6,7 +6,7 @@ export function createProtectedRouteGuard(isAuthenticated) {
     const location = useLocation()
 
     if (!isAuthenticated) {
-      return <Navigate to={PUBLIC_ROUTES.signIn} replace state={{ from: location }} />
+      return <Navigate to={PUBLIC_ROUTES.home} replace state={{ from: location }} />
     }
 
     return children

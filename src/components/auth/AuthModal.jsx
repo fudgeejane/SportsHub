@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X } from 'lucide-react'
 import { ROLES } from '../../contexts/AuthContext'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth.jsx'
 import { isFirebaseConfigComplete } from '../../firebase'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
+import ForgotPasswordModal from './ForgotPasswordModal'
 
 const roleOptions = [
   { value: ROLES.PLAYER, label: 'Player' },
@@ -32,12 +33,18 @@ function getFriendlyAuthError(error) {
 export default function AuthModal({ mode = 'sign-in', onClose }) {
   const isSignUp = mode === 'sign-up'
   const navigate = useNavigate()
-  const { signIn, signInWithGoogle, signUp } = useAuth()
+  const { signIn, signUp } = useAuth()
+  const [showForgotPassword, setShowForgotPassword] = useState(mode === 'forgot-password')
   const [form, setForm] = useState({
     displayName: '',
     email: '',
     password: '',
     role: ROLES.PLAYER,
+    age: '',
+    gender: '',
+    contactNumber: '',
+    preferredSport: '',
+    skillLevel: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -72,29 +79,25 @@ export default function AuthModal({ mode = 'sign-in', onClose }) {
     }
   }
 
-  const handleGoogle = async () => {
+  const handleModeSwitch = (event) => {
+    event.preventDefault()
+    setShowForgotPassword(false)
+    navigate(isSignUp ? PUBLIC_ROUTES.signIn : PUBLIC_ROUTES.signUp, {
+      replace: true,
+      state: { restoreScrollY: window.scrollY },
+    })
+  }
+
+  const handleForgotPassword = (event) => {
+    event.preventDefault()
     setError('')
-
-    if (!isFirebaseConfigComplete) {
-      setError('Firebase config is incomplete. Check your VITE_FIREBASE_* values in .env and restart the dev server.')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      await signInWithGoogle(form.role)
-      navigate('/dashboard', { replace: true })
-    } catch (authError) {
-      setError(getFriendlyAuthError(authError))
-    } finally {
-      setLoading(false)
-    }
+    setShowForgotPassword(true)
   }
 
   return (
     <div className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/40 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/20">
+      {showForgotPassword ? <ForgotPasswordModal onBack={() => setShowForgotPassword(false)} onClose={onClose} /> : (
+      <div className="max-h-[92svh] w-full max-w-md overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/20">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-600">SportsHub</p>
@@ -112,17 +115,83 @@ export default function AuthModal({ mode = 'sign-in', onClose }) {
 
         <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
           {isSignUp ? (
-            <label className="grid gap-2 text-sm font-semibold text-slate-700">
-              Full name
-              <input
-                required
-                name="displayName"
-                value={form.displayName}
-                onChange={updateField}
-                className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
-                placeholder="Juan Dela Cruz"
-              />
-            </label>
+            <>
+              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                Full name
+                <input
+                  required
+                  name="displayName"
+                  value={form.displayName}
+                  onChange={updateField}
+                  className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
+                  placeholder="Juan Dela Cruz"
+                />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                  Age
+                  <input
+                    name="age"
+                    type="number"
+                    min="1"
+                    value={form.age}
+                    onChange={updateField}
+                    className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                  Gender
+                  <select
+                    name="gender"
+                    value={form.gender}
+                    onChange={updateField}
+                    className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
+                  >
+                    <option value="">Select</option>
+                    <option>Female</option>
+                    <option>Male</option>
+                    <option>Prefer not to say</option>
+                  </select>
+                </label>
+              </div>
+              <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                Contact number
+                <input
+                  name="contactNumber"
+                  value={form.contactNumber}
+                  onChange={updateField}
+                  className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
+                  placeholder="09xx xxx xxxx"
+                />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                  Preferred sport
+                  <input
+                    name="preferredSport"
+                    value={form.preferredSport}
+                    onChange={updateField}
+                    className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
+                    placeholder="Basketball"
+                  />
+                </label>
+                <label className="grid gap-2 text-sm font-semibold text-slate-700">
+                  Skill level
+                  <select
+                    name="skillLevel"
+                    value={form.skillLevel}
+                    onChange={updateField}
+                    className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
+                  >
+                    <option value="">Select</option>
+                    <option>Beginner</option>
+                    <option>Intermediate</option>
+                    <option>Advanced</option>
+                    <option>Competitive</option>
+                  </select>
+                </label>
+              </div>
+            </>
           ) : null}
 
           <label className="grid gap-2 text-sm font-semibold text-slate-700">
@@ -179,25 +248,22 @@ export default function AuthModal({ mode = 'sign-in', onClose }) {
             {loading ? 'Please wait...' : isSignUp ? 'Sign Up' : 'Sign In'}
           </button>
 
-          <button
-            type="button"
-            onClick={handleGoogle}
-            disabled={loading}
-            className="rounded-2xl border border-slate-200 px-4 py-3 font-bold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Continue with Google
-          </button>
         </form>
 
         <div className="mt-5 flex items-center justify-between gap-3 text-sm">
-          <a href={PUBLIC_ROUTES.forgotPassword} className="font-semibold text-blue-600 hover:text-blue-700">
+          <a href={PUBLIC_ROUTES.forgotPassword} onClick={handleForgotPassword} className="font-semibold text-blue-600 hover:text-blue-700">
             Forgot password?
           </a>
-          <a href={isSignUp ? PUBLIC_ROUTES.signIn : PUBLIC_ROUTES.signUp} className="font-semibold text-slate-700 hover:text-slate-950">
+          <a
+            href={isSignUp ? PUBLIC_ROUTES.signIn : PUBLIC_ROUTES.signUp}
+            onClick={handleModeSwitch}
+            className="font-semibold text-slate-700 hover:text-slate-950"
+          >
             {isSignUp ? 'Already have an account?' : 'Need an account?'}
           </a>
         </div>
       </div>
+      )}
     </div>
   )
 }

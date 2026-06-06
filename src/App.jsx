@@ -3,11 +3,13 @@ import AuthStatusRoute from './components/auth/AuthStatusRoute'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import PublicOnlyRoute from './components/auth/PublicOnlyRoute'
 import RoleRedirect from './components/auth/RoleRedirect'
+import GlobalLoadingScreen from './components/loading/GlobalLoadingScreen'
 import { ROLES } from './contexts/AuthContext'
+import { useAuth } from './hooks/useAuth.jsx'
+import { useGlobalLoading } from './hooks/useGlobalLoading.jsx'
 import AccessDeniedPage from './pages/auth/AccessDeniedPage'
 import AdminSetupPage from './pages/auth/AdminSetupPage'
 import ApprovalPendingPage from './pages/auth/ApprovalPendingPage'
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 import CoachDashboard from './pages/dashboards/CoachDashboard'
@@ -34,24 +36,28 @@ function PlaceholderPage({ title }) {
 }
 
 const protectedAppPaths = [
-  '/projects',
-  '/tasks',
-  '/updates',
-  '/notifications',
+  '/sports',
+  '/events',
+  '/team-structures',
   '/teams',
-  '/progress',
-  '/feedback',
+  '/registrations',
+  '/profile',
   '/analytics',
   '/schedule',
-  '/workflows',
   '/users',
   '/facilitators',
   '/settings',
 ]
 
-export default function App() {
+function AppRoutes() {
+  const { loading: authLoading } = useAuth()
+  const { isGlobalLoading, loadingLabel } = useGlobalLoading()
+
   return (
-    <Router>
+    <>
+      {(authLoading || isGlobalLoading) && (
+        <GlobalLoadingScreen label={authLoading ? 'Checking your SportsHub session...' : loadingLabel} />
+      )}
       <Routes>
         <Route
           path={PUBLIC_ROUTES.home}
@@ -81,7 +87,7 @@ export default function App() {
           path={PUBLIC_ROUTES.forgotPassword}
           element={
             <PublicOnlyRoute>
-              <ForgotPasswordPage />
+              <LandingPage authModal="forgot-password" />
             </PublicOnlyRoute>
           }
         />
@@ -198,6 +204,14 @@ export default function App() {
 
         <Route path="*" element={<Navigate to={PUBLIC_ROUTES.home} replace />} />
       </Routes>
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AppRoutes />
     </Router>
   )
 }

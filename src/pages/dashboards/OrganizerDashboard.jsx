@@ -1,58 +1,17 @@
-import { useEffect, useState } from 'react'
-import { collection, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore'
-import { ROLES, STATUSES } from '../../contexts/AuthContext'
-import { useAuth } from '../../hooks/useAuth'
-import { db } from '../../firebase'
+import { ROLES } from '../../contexts/AuthContext'
+import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
 import DashboardShell from './DashboardShell'
 
 const roleOptions = [ROLES.ADMIN, ROLES.COMMUNITY_ORGANIZER, ROLES.COACH, ROLES.FACILITATOR, ROLES.PLAYER]
 
 export default function OrganizerDashboard() {
   const { currentUser } = useAuth()
-  const [users, setUsers] = useState([])
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    const usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'))
-    const unsubscribe = onSnapshot(
-      usersQuery,
-      (snapshot) => {
-        setUsers(snapshot.docs.map((userDoc) => ({ id: userDoc.id, ...userDoc.data() })))
-      },
-      (snapshotError) => setError(snapshotError.message),
-    )
-
-    return unsubscribe
-  }, [])
-
-  const updateUser = async (uid, updates) => {
-    setError('')
-    try {
-      await updateDoc(doc(db, 'users', uid), updates)
-    } catch (updateError) {
-      setError(updateError.message)
-    }
-  }
-
-  const approveUser = (uid) =>
-    updateUser(uid, {
-      status: STATUSES.APPROVED,
-      approvedBy: currentUser.uid,
-      approvedAt: serverTimestamp(),
-    })
-
-  const rejectUser = (uid) =>
-    updateUser(uid, {
-      status: STATUSES.REJECTED,
-      approvedBy: currentUser.uid,
-      approvedAt: serverTimestamp(),
-    })
-
-  const changeRole = (uid, role) => updateUser(uid, { role })
+  const { users, loading, error, approveUser, rejectUser, changeRole } = useUserManagement(currentUser?.uid)
 
   return (
     <DashboardShell title="Organizer Dashboard" description="Approve users, reject users, and manage SportsHub roles.">
       {error ? <p className="mb-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</p> : null}
+      {loading ? <p className="mb-4 rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-700">Loading users...</p> : null}
 
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
         <div className="border-b border-slate-200 p-5">

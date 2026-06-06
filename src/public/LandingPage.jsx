@@ -1,6 +1,6 @@
-import { useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowRight,
   BarChart3,
@@ -88,7 +88,52 @@ function Logo() {
 
 export default function LandingPage({ authModal }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const heroSectionRef = useRef(null)
+
+  const scrollToSection = useCallback((href, behavior = 'smooth') => {
+    const target = document.querySelector(href)
+    if (!target) return
+
+    const headerHeight = document.querySelector('header')?.getBoundingClientRect().height ?? 0
+    const top = target.getBoundingClientRect().top + window.scrollY - headerHeight
+
+    window.scrollTo({ top: Math.max(0, top), behavior })
+    window.history.pushState(null, '', href)
+  }, [])
+
+  const handleSectionNav = (event, href) => {
+    event.preventDefault()
+    scrollToSection(href)
+  }
+
+  const openAuthModal = (event, route) => {
+    event.preventDefault()
+    navigate(route, { state: { restoreScrollY: window.scrollY } })
+  }
+
+  const closeAuthModal = () => {
+    navigate(PUBLIC_ROUTES.home, {
+      replace: true,
+      state: { restoreScrollY: window.scrollY },
+    })
+  }
+
+  useEffect(() => {
+    if (!window.location.hash) return
+
+    requestAnimationFrame(() => {
+      scrollToSection(window.location.hash, 'auto')
+    })
+  }, [scrollToSection])
+
+  useEffect(() => {
+    if (typeof location.state?.restoreScrollY !== 'number') return
+
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: location.state.restoreScrollY, behavior: 'auto' })
+    })
+  }, [location.state])
 
   const handleInquirySubmit = (event) => {
     event.preventDefault()
@@ -118,27 +163,40 @@ export default function LandingPage({ authModal }) {
           <Logo />
           <div className="order-3 flex w-full items-center justify-center gap-4 overflow-x-auto text-nowrap border-t border-slate-100 pt-3 sm:gap-6 md:w-auto md:border-t-0 md:pt-0 lg:order-2 lg:gap-8" aria-label="Primary navigation">
             {navLinks.map((link) => (
-              <a key={link.label} href={link.href} className="text-sm font-medium text-slate-600 transition hover:text-slate-950">
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={(event) => handleSectionNav(event, link.href)}
+                className="text-sm font-medium text-slate-600 transition hover:text-slate-950"
+              >
                 {link.label}
               </a>
             ))}
           </div>
           <div className="order-2 flex items-center gap-2 lg:order-3 lg:gap-3">
-            <a href={PUBLIC_ROUTES.signIn} className="hidden rounded-full px-4 py-2 text-sm font-semibold text-blue-500 transition hover:bg-slate-100 sm:inline-flex">
+            <a
+              href={PUBLIC_ROUTES.signIn}
+              onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signIn)}
+              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-blue-500 transition hover:bg-slate-100 sm:inline-flex"
+            >
               Sign In
             </a>
-            <a href={PUBLIC_ROUTES.signUp} className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-4 py-2 text-white text-sm">
-              Join SportsHub <ArrowRight size={16} />
+            <a
+              href={PUBLIC_ROUTES.signUp}
+              onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
+              className="inline-flex items-center gap-2 rounded-full bg-blue-500 hover:bg-blue-600 px-4 py-2 text-sm !text-white"
+            >
+              Join Now <ArrowRight size={16} />
             </a>
           </div>
         </nav>
       </header>
 
-      <main className="pt-[7.25rem] md:pt-16">
+      <main className="pt-[var(--header-height)]">
        <section
         ref={heroSectionRef}
         id="home"
-        className="relative isolate min-h-[calc(100svh-7.25rem)] overflow-hidden px-4 py-12 sm:px-6 sm:py-16 md:min-h-[calc(100svh-4rem)] lg:px-8"
+        className="relative isolate min-h-[calc(100svh_-_var(--header-height))] overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:px-8"
       >
         <div
           className="hero-bg absolute inset-0 -z-20 bg-cover bg-center will-change-transform"
@@ -148,7 +206,7 @@ export default function LandingPage({ authModal }) {
         <div className="hero-overlay absolute inset-0 -z-10 bg-black/45" aria-hidden="true" />
 
         <div
-          className="mx-auto flex min-h-[calc(100svh-13rem)] max-w-7xl items-center justify-center text-center sm:min-h-[calc(100svh-11rem)]"
+          className="mx-auto flex min-h-[calc(100svh_-_var(--header-height)_-_6rem)] max-w-7xl items-center justify-center text-center sm:min-h-[calc(100svh_-_var(--header-height)_-_8rem)]"
         >
           <div className="relative z-10 max-w-4xl">
 
@@ -167,14 +225,16 @@ export default function LandingPage({ authModal }) {
             <div className="hero-animate mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
                 href={PUBLIC_ROUTES.signUp}
-                className="hero-action inline-flex items-center justify-center gap-2 rounded-full bg-cyan-500 px-6 py-3 font-bold text-slate-950 shadow-xl shadow-cyan-500/25 transition hover:-translate-y-0.5 hover:bg-cyan-400"
+                onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
+                className="inline-flex items-center hover:-translate-y-0.5 gap-2 rounded-full bg-blue-500 hover:bg-blue-600 px-4 py-4 text-sm !text-white"
               >
                 Explore Platform <ArrowRight size={18} />
               </a>
 
               <a
                 href="#about"
-                className="hero-action inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 font-bold text-white shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/20"
+                onClick={(event) => handleSectionNav(event, '#about')}
+                className="hero-action inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 font-bold !text-white shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/20"
               >
                 <Target size={18} /> Learn About SportsHub
               </a>
@@ -220,7 +280,7 @@ export default function LandingPage({ authModal }) {
           </div>
         </section>
 
-        <section id="cta" className="flex min-h-[calc(100svh-7.25rem)] items-center bg-slate-950 px-4 py-10 sm:px-6 md:min-h-[calc(100svh-4rem)] lg:px-8">
+        <section id="cta" className="flex min-h-[calc(100svh_-_var(--header-height))] items-center bg-slate-950 px-4 py-10 sm:px-6 lg:px-8">
           <div className="mx-auto grid w-full max-w-7xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
             <motion.div {...fadeUp} className="text-center lg:text-left">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-cyan-300">Inquiry</p>
@@ -284,7 +344,11 @@ export default function LandingPage({ authModal }) {
                 <button type="submit" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-cyan-500 px-6 font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-400">
                   Send Inquiry <Send size={18} />
                 </button>
-                <a href={PUBLIC_ROUTES.signUp} className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-slate-200 px-6 font-bold text-slate-700 transition hover:border-cyan-300 hover:text-slate-950">
+                <a
+                  href={PUBLIC_ROUTES.signUp}
+                  onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
+                  className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-slate-200 px-6 font-bold text-slate-700 transition hover:border-cyan-300 hover:text-slate-950"
+                >
                   Create Account
                 </a>
               </div>
@@ -298,7 +362,14 @@ export default function LandingPage({ authModal }) {
           <Logo />
           <div className="flex flex-wrap gap-5 text-sm font-medium text-slate-600">
             {['Home', 'Features', 'About', 'CTA'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="hover:text-slate-950">{item}</a>
+              <a
+                key={item}
+                href={`#${item.toLowerCase()}`}
+                onClick={(event) => handleSectionNav(event, `#${item.toLowerCase()}`)}
+                className="hover:text-slate-950"
+              >
+                {item}
+              </a>
             ))}
           </div>
           <div className="flex gap-3">
@@ -310,7 +381,7 @@ export default function LandingPage({ authModal }) {
           </div>
         </div>
       </footer>
-      {authModal ? <AuthModal mode={authModal} onClose={() => navigate(PUBLIC_ROUTES.home)} /> : null}
+      {authModal ? <AuthModal mode={authModal} onClose={closeAuthModal} /> : null}
     </div>
   )
 }

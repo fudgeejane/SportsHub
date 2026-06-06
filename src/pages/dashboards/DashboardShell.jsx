@@ -1,4 +1,4 @@
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth.jsx'
 import AppLayout from '../../components/layout/AppLayout'
 
 export default function DashboardShell({ title, description, children }) {
