@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, LogOut, Menu, X, EllipsisVertical, Triangle } from 'lucide-react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { LogOut, Menu, X, Triangle } from 'lucide-react'
 import defaultAvatar from '../../assets/default-avatar.svg'
 import { useAuth } from '../../hooks/useAuth.jsx'
-import { getAllowedNav, getRoleKey } from '../../routes/navConfig'
+import { getAllowedNav } from '../../routes/navConfig'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
 import Logo from '../../assets/SportsHub.png'
 import { AnimatePresence, motion } from 'framer-motion';
@@ -68,13 +68,11 @@ function SidebarContent({ collapsed, onNavigate, onLogout }) {
 
 export default function AppLayout() {
   const { currentUser, signOut, userProfile } = useAuth()
-  const location = useLocation()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const sidebarWidth = collapsed ? 'lg:pl-20' : 'lg:pl-72'
-  const pageTitle = getAllowedNav(userProfile?.role).find((item) => item.path === location.pathname)?.label || 'Dashboard'
 
   const handleLogout = async () => {
     await signOut()
