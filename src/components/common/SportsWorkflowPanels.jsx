@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
-import AppLayout from '../../components/layout/AppLayout'
-import { ROLES } from '../../contexts/AuthContext'
+import AppLayout from '../layout/AppLayout'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { JOIN_REQUEST_STATUS, useSportsSystem } from '../../hooks/useSportsSystem.jsx'
 
@@ -47,7 +46,7 @@ function inputClass() {
   return 'min-h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
 }
 
-function Panel({ title, description, children }) {
+export function Panel({ title, description, children }) {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/5">
       <div className="mb-5">
@@ -59,7 +58,7 @@ function Panel({ title, description, children }) {
   )
 }
 
-function EmptyState({ text }) {
+export function EmptyState({ text }) {
   return <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">{text}</p>
 }
 
@@ -76,7 +75,7 @@ function pickName(items, id) {
   return items.find((item) => item.id === id)?.name || ''
 }
 
-function OrganizerSports({ system }) {
+export function OrganizerSports({ system }) {
   const [form, setForm] = useState(emptySport)
   const [editingId, setEditingId] = useState('')
 
@@ -133,7 +132,7 @@ function OrganizerSports({ system }) {
   )
 }
 
-function OrganizerEvents({ system }) {
+export function OrganizerEvents({ system }) {
   const [form, setForm] = useState(emptyEvent)
 
   const submit = async (event) => {
@@ -190,7 +189,7 @@ function OrganizerEvents({ system }) {
   )
 }
 
-function TeamStructureSetup({ system }) {
+export function TeamStructureSetup({ system }) {
   const [form, setForm] = useState(emptyStructure)
 
   const submit = async (event) => {
@@ -247,7 +246,7 @@ function TeamStructureSetup({ system }) {
   )
 }
 
-function TeamsMonitor({ system, coachOnly = false }) {
+export function TeamsMonitor({ system, coachOnly = false }) {
   const { currentUser, userProfile } = useAuth()
   const [form, setForm] = useState(emptyTeam)
   const visibleTeams = coachOnly ? system.teams.filter((team) => team.coachId === currentUser.uid) : system.teams
@@ -300,7 +299,7 @@ function TeamsMonitor({ system, coachOnly = false }) {
   )
 }
 
-function JoinRequests({ system, coachOnly = false, playerOnly = false }) {
+export function JoinRequests({ system, coachOnly = false, playerOnly = false }) {
   const { currentUser } = useAuth()
   const requests = system.requests.filter((request) => {
     if (coachOnly) return request.coachId === currentUser.uid
@@ -337,7 +336,7 @@ function JoinRequests({ system, coachOnly = false, playerOnly = false }) {
   )
 }
 
-function PlayerProfile({ system }) {
+export function PlayerProfile({ system }) {
   const { userProfile } = useAuth()
   const [form, setForm] = useState({
     displayName: userProfile?.displayName || '',
@@ -368,7 +367,7 @@ function PlayerProfile({ system }) {
   )
 }
 
-function PlayerTeams({ system }) {
+export function PlayerTeams({ system }) {
   const [messages, setMessages] = useState({})
 
   return (
@@ -393,7 +392,7 @@ function PlayerTeams({ system }) {
   )
 }
 
-function FacilitatorStatic({ path }) {
+export function FacilitatorStatic({ path }) {
   return (
     <Panel title={titleFromPath(path)} description="Facilitator pages are static monitoring screens for this version.">
       <div className="grid gap-4 md:grid-cols-3">
@@ -408,32 +407,20 @@ function FacilitatorStatic({ path }) {
   )
 }
 
-export default function AppContentPage({ path }) {
-  const { userProfile } = useAuth()
-  const system = useSportsSystem()
-  const role = userProfile?.role
-  const isOrganizer = role === ROLES.COMMUNITY_ORGANIZER || role === ROLES.ADMIN
-  const isCoach = role === ROLES.COACH
-  const isPlayer = role === ROLES.PLAYER
-  const isFacilitator = role === ROLES.FACILITATOR
+export function PlaceholderWorkflow({ title }) {
+  return (
+    <Panel title={title} description="This SportsHub workspace uses live Firestore data where applicable.">
+      <EmptyState text="Select a sports management workflow from the sidebar." />
+    </Panel>
+  )
+}
 
-  const content = useMemo(() => {
-    if (isFacilitator) return <FacilitatorStatic path={path} />
-    if (isOrganizer && path === '/sports') return <OrganizerSports system={system} />
-    if (isOrganizer && path === '/events') return <OrganizerEvents system={system} />
-    if (isOrganizer && path === '/team-structures') return <TeamStructureSetup system={system} />
-    if (isOrganizer && path === '/teams') return <TeamsMonitor system={system} />
-    if (isOrganizer && path === '/registrations') return <JoinRequests system={system} />
-    if (isCoach && path === '/teams') return <TeamsMonitor system={system} coachOnly />
-    if (isCoach && path === '/registrations') return <JoinRequests system={system} coachOnly />
-    if (isPlayer && path === '/profile') return <PlayerProfile system={system} />
-    if (isPlayer && path === '/teams') return <PlayerTeams system={system} />
-    if (isPlayer && path === '/registrations') return <JoinRequests system={system} playerOnly />
-    return <Panel title={titleFromPath(path)} description="This SportsHub workspace uses live Firestore data where applicable."><EmptyState text="Select a sports management workflow from the sidebar." /></Panel>
-  }, [isCoach, isFacilitator, isOrganizer, isPlayer, path, system])
+export function SportsWorkflowPage({ title, children }) {
+  const system = useSportsSystem()
+  const content = useMemo(() => children(system), [children, system])
 
   return (
-    <AppLayout title={titleFromPath(path)}>
+    <AppLayout title={title}>
       <div className="grid gap-4">
         <StatusMessage error={system.error} loading={system.loading} />
         {content}

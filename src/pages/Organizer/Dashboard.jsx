@@ -1,6 +1,6 @@
 import { ROLES } from '../../contexts/AuthContext'
 import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
-import DashboardShell from './DashboardShell'
+import DashboardShell from '../../components/common/DashboardShell'
 
 const roleOptions = [ROLES.ADMIN, ROLES.COMMUNITY_ORGANIZER, ROLES.COACH, ROLES.FACILITATOR, ROLES.PLAYER]
 

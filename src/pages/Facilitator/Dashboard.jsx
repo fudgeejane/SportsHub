@@ -1,4 +1,4 @@
-import DashboardShell from './DashboardShell'
+import DashboardShell from '../../components/common/DashboardShell'
 
 export default function FacilitatorDashboard() {
   return (

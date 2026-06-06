@@ -1,5 +1,5 @@
 import { useAuth } from '../../hooks/useAuth.jsx'
-import AppLayout from '../../components/layout/AppLayout'
+import AppLayout from '../layout/AppLayout'
 
 export default function DashboardShell({ title, description, children }) {
   const { userProfile } = useAuth()
