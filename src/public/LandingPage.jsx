@@ -19,7 +19,9 @@ import {
   UsersRound,
   Workflow,
 } from 'lucide-react'
-import AuthModal from '../components/auth/AuthModal'
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal'
+import SignInModal from '../components/auth/SignInModal'
+import SignUpModal from '../components/auth/SignUpModal'
 import heroBackground from '../assets/hero-section.jpg'
 import navLogo from '../assets/SportsHub.png'
 import { PUBLIC_ROUTES } from '../routes/public-routes'
@@ -117,6 +119,21 @@ export default function LandingPage({ authModal }) {
       replace: true,
       state: { restoreScrollY: window.scrollY },
     })
+  }
+
+  const renderAuthModal = () => {
+    if (authModal === 'sign-in') return <SignInModal onClose={closeAuthModal} />
+    if (authModal === 'sign-up') return <SignUpModal onClose={closeAuthModal} />
+    if (authModal === 'forgot-password') {
+      return (
+        <ForgotPasswordModal
+          onBack={() => navigate(PUBLIC_ROUTES.signIn, { replace: true, state: { restoreScrollY: window.scrollY } })}
+          onClose={closeAuthModal}
+        />
+      )
+    }
+
+    return null
   }
 
   useEffect(() => {
@@ -381,7 +398,7 @@ export default function LandingPage({ authModal }) {
           </div>
         </div>
       </footer>
-      {authModal ? <AuthModal mode={authModal} onClose={closeAuthModal} /> : null}
+      {renderAuthModal()}
     </div>
   )
 }

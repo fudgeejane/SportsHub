@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { ArrowLeft, X } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth.jsx'
+import AuthDialog from './AuthDialog'
 
 export default function ForgotPasswordModal({ onBack, onClose }) {
   const { forgotPassword } = useAuth()
@@ -26,23 +27,7 @@ export default function ForgotPasswordModal({ onBack, onClose }) {
   }
 
   return (
-    <div className="max-h-[92svh] w-full max-w-md overflow-y-auto rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl shadow-slate-900/20">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-600">SportsHub</p>
-          <h2 className="mt-2 text-2xl font-bold text-slate-950">Forgot password</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">Enter your email address and SportsHub will send reset instructions.</p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50"
-          aria-label="Close forgot password modal"
-        >
-          <X size={18} />
-        </button>
-      </div>
-
+    <AuthDialog title="Forgot password" description="Enter your email address and SportsHub will send reset instructions." onClose={onClose}>
       <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
         <label className="grid gap-2 text-sm font-semibold text-slate-700">
           Email
@@ -74,6 +59,6 @@ export default function ForgotPasswordModal({ onBack, onClose }) {
         <ArrowLeft size={16} />
         Back to sign in
       </button>
-    </div>
+    </AuthDialog>
   )
 }
