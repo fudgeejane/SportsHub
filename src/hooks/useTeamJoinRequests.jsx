@@ -80,32 +80,24 @@ export function useTeamJoinRequests(filters = {}) {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const { startLoading } = useGlobalLoading()
   const filterKey = JSON.stringify(filters)
 
   useEffect(() => {
-    const stopGlobalLoading = startLoading('Loading team join requests...')
-
     const unsubscribe = onSnapshot(
       buildJoinRequestQuery(filters),
       (snapshot) => {
         setRequests(mapSnapshot(snapshot))
         setLoading(false)
-        stopGlobalLoading()
       },
       (snapshotError) => {
         setError(snapshotError.message)
         setLoading(false)
-        stopGlobalLoading()
       },
     )
 
-    return () => {
-      stopGlobalLoading()
-      unsubscribe()
-    }
+    return unsubscribe
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey, startLoading])
+  }, [filterKey])
 
   const state = useMemo(() => ({ requests, loading, error }), [error, loading, requests])
 

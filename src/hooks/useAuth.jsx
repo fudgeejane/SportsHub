@@ -80,7 +80,6 @@ export function useUserManagement(reviewerId) {
   const { startLoading } = useGlobalLoading()
 
   useEffect(() => {
-    const stopGlobalLoading = startLoading('Loading users...')
     const usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'))
 
     const unsubscribe = onSnapshot(
@@ -88,20 +87,15 @@ export function useUserManagement(reviewerId) {
       (snapshot) => {
         setUsers(snapshot.docs.map((userDoc) => ({ id: userDoc.id, ...userDoc.data() })))
         setLoading(false)
-        stopGlobalLoading()
       },
       (snapshotError) => {
         setError(snapshotError.message)
         setLoading(false)
-        stopGlobalLoading()
       },
     )
 
-    return () => {
-      stopGlobalLoading()
-      unsubscribe()
-    }
-  }, [startLoading])
+    return unsubscribe
+  }, [])
 
   const runUserUpdate = useCallback(
     async (uid, updates) => {

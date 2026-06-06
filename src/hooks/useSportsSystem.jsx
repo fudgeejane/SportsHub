@@ -34,14 +34,12 @@ function snapshotRows(snapshot) {
   return snapshot.docs.map((entry) => ({ id: entry.id, ...entry.data() }))
 }
 
-function useLiveCollection(collectionName, label) {
+function useLiveCollection(collectionName) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const { startLoading } = useGlobalLoading()
 
   useEffect(() => {
-    const stopLoading = startLoading(`Loading ${label}...`)
     const itemsQuery = query(collection(db, collectionName), orderBy('createdAt', 'desc'))
 
     const unsubscribe = onSnapshot(
@@ -49,20 +47,15 @@ function useLiveCollection(collectionName, label) {
       (snapshot) => {
         setItems(snapshotRows(snapshot))
         setLoading(false)
-        stopLoading()
       },
       (snapshotError) => {
         setError(snapshotError.message)
         setLoading(false)
-        stopLoading()
       },
     )
 
-    return () => {
-      stopLoading()
-      unsubscribe()
-    }
-  }, [collectionName, label, startLoading])
+    return unsubscribe
+  }, [collectionName])
 
   return { items, loading, error }
 }
@@ -75,12 +68,12 @@ function normalizeNumber(value, fallback = 0) {
 
 export function useSportsSystem() {
   const { currentUser, userProfile } = useAuth()
-  const sportsState = useLiveCollection(COLLECTIONS.SPORTS, 'sports')
-  const eventsState = useLiveCollection(COLLECTIONS.EVENTS, 'events')
-  const structuresState = useLiveCollection(COLLECTIONS.TEAM_STRUCTURES, 'team structures')
-  const teamsState = useLiveCollection(COLLECTIONS.TEAMS, 'teams')
-  const membersState = useLiveCollection(COLLECTIONS.TEAM_MEMBERS, 'team rosters')
-  const requestsState = useLiveCollection(COLLECTIONS.TEAM_JOIN_REQUESTS, 'join requests')
+  const sportsState = useLiveCollection(COLLECTIONS.SPORTS)
+  const eventsState = useLiveCollection(COLLECTIONS.EVENTS)
+  const structuresState = useLiveCollection(COLLECTIONS.TEAM_STRUCTURES)
+  const teamsState = useLiveCollection(COLLECTIONS.TEAMS)
+  const membersState = useLiveCollection(COLLECTIONS.TEAM_MEMBERS)
+  const requestsState = useLiveCollection(COLLECTIONS.TEAM_JOIN_REQUESTS)
   const [actionError, setActionError] = useState('')
   const { startLoading } = useGlobalLoading()
 

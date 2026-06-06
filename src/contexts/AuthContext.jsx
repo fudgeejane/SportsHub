@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useEffect, useMemo, useRef, useState } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { auth, db } from '../firebase'
@@ -25,19 +25,23 @@ export function AuthProvider({ children }) {
   const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState('')
+  const hasInitialized = useRef(false)
 
   useEffect(() => {
     let unsubscribeProfile = () => {}
 
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       unsubscribeProfile()
-      setLoading(true)
+      if (!hasInitialized.current) {
+        setLoading(true)
+      }
       setAuthError('')
       setCurrentUser(firebaseUser)
 
       if (!firebaseUser) {
         setUserProfile(null)
         setLoading(false)
+        hasInitialized.current = true
         return
       }
 
@@ -46,11 +50,13 @@ export function AuthProvider({ children }) {
         (snapshot) => {
           setUserProfile(snapshot.exists() ? snapshot.data() : null)
           setLoading(false)
+          hasInitialized.current = true
         },
         (error) => {
           setAuthError(error.message)
           setUserProfile(null)
           setLoading(false)
+          hasInitialized.current = true
         },
       )
     })
