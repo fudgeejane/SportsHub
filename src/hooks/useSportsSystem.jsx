@@ -11,6 +11,8 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { normalizeTeamStructure } from '../constants/teamStructure'
+import { ROLES } from '../contexts/AuthContext'
 import { db } from '../firebase'
 import { useGlobalLoading } from './useGlobalLoading.jsx'
 import { useAuth } from './useAuth.jsx'
@@ -18,7 +20,6 @@ import { useAuth } from './useAuth.jsx'
 export const COLLECTIONS = {
   SPORTS: 'sports',
   EVENTS: 'events',
-  TEAM_STRUCTURES: 'teamStructures',
   TEAMS: 'teams',
   TEAM_MEMBERS: 'teamMembers',
   TEAM_JOIN_REQUESTS: 'teamJoinRequests',
@@ -35,13 +36,27 @@ function snapshotRows(snapshot) {
 }
 
 function useLiveCollection(collectionName) {
+  const itemsQuery = useMemo(
+    () => query(collection(db, collectionName), orderBy('createdAt', 'desc')),
+    [collectionName],
+  )
+  return useLiveQuery(itemsQuery)
+}
+
+function useLiveQuery(itemsQuery) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const itemsQuery = query(collection(db, collectionName), orderBy('createdAt', 'desc'))
+    if (!itemsQuery) {
+      setItems([])
+      setLoading(false)
+      setError('')
+      return undefined
+    }
 
+    setLoading(true)
     const unsubscribe = onSnapshot(
       itemsQuery,
       (snapshot) => {
@@ -55,7 +70,7 @@ function useLiveCollection(collectionName) {
     )
 
     return unsubscribe
-  }, [collectionName])
+  }, [itemsQuery])
 
   return { items, loading, error }
 }
@@ -66,14 +81,34 @@ function normalizeNumber(value, fallback = 0) {
   return Number.isFinite(number) ? number : fallback
 }
 
+const organizerRoles = [ROLES.COMMUNITY_ORGANIZER, ROLES.ADMIN]
+
 export function useSportsSystem() {
-  const { currentUser, userProfile } = useAuth()
+  const { currentUser, userProfile, role } = useAuth()
   const sportsState = useLiveCollection(COLLECTIONS.SPORTS)
   const eventsState = useLiveCollection(COLLECTIONS.EVENTS)
-  const structuresState = useLiveCollection(COLLECTIONS.TEAM_STRUCTURES)
   const teamsState = useLiveCollection(COLLECTIONS.TEAMS)
   const membersState = useLiveCollection(COLLECTIONS.TEAM_MEMBERS)
-  const requestsState = useLiveCollection(COLLECTIONS.TEAM_JOIN_REQUESTS)
+  const joinRequestsQuery = useMemo(() => {
+    if (!currentUser?.uid || !role) return null
+
+    const base = collection(db, COLLECTIONS.TEAM_JOIN_REQUESTS)
+
+    if (role === ROLES.COACH) {
+      return query(base, where('coachId', '==', currentUser.uid), orderBy('createdAt', 'desc'))
+    }
+
+    if (role === ROLES.PLAYER) {
+      return query(base, where('playerId', '==', currentUser.uid), orderBy('createdAt', 'desc'))
+    }
+
+    if (organizerRoles.includes(role) || role === ROLES.FACILITATOR) {
+      return query(base, orderBy('createdAt', 'desc'))
+    }
+
+    return null
+  }, [currentUser?.uid, role])
+  const requestsState = useLiveQuery(joinRequestsQuery)
   const [actionError, setActionError] = useState('')
   const { startLoading } = useGlobalLoading()
 
@@ -100,6 +135,7 @@ export function useSportsSystem() {
         addDoc(collection(db, COLLECTIONS.SPORTS), {
           name: data.name?.trim(),
           description: data.description?.trim() || '',
+          teamStructure: normalizeTeamStructure(data.teamStructure),
           status: 'ACTIVE',
           createdBy: currentUser.uid,
           createdAt: serverTimestamp(),
@@ -115,6 +151,17 @@ export function useSportsSystem() {
         updateDoc(doc(db, COLLECTIONS.SPORTS, sportId), {
           name: data.name?.trim(),
           description: data.description?.trim() || '',
+          updatedAt: serverTimestamp(),
+        }),
+      ),
+    [runAction],
+  )
+
+  const updateSportTeamStructure = useCallback(
+    (sportId, teamStructure) =>
+      runAction('Saving team structure...', () =>
+        updateDoc(doc(db, COLLECTIONS.SPORTS, sportId), {
+          teamStructure: normalizeTeamStructure(teamStructure),
           updatedAt: serverTimestamp(),
         }),
       ),
@@ -141,6 +188,8 @@ export function useSportsSystem() {
           sportName: data.sportName || '',
           venue: data.venue?.trim() || '',
           eventDate: data.eventDate || '',
+          startTime: data.startTime || '',
+          endTime: data.endTime || '',
           status: data.status || 'OPEN',
           createdBy: currentUser.uid,
           createdAt: serverTimestamp(),
@@ -159,37 +208,6 @@ export function useSportsSystem() {
         }),
       ),
     [runAction],
-  )
-
-  const saveTeamStructure = useCallback(
-    (data) =>
-      runAction('Saving team structure...', async () => {
-        const payload = {
-          sportId: data.sportId,
-          sportName: data.sportName || '',
-          eventId: data.eventId,
-          eventName: data.eventName || '',
-          minTeams: normalizeNumber(data.minTeams, 2),
-          maxTeams: normalizeNumber(data.maxTeams, 4),
-          minPlayersPerTeam: normalizeNumber(data.minPlayersPerTeam, 5),
-          maxPlayersPerTeam: normalizeNumber(data.maxPlayersPerTeam, 12),
-          registrationType: data.registrationType || 'PLAYER_REQUEST',
-          updatedAt: serverTimestamp(),
-        }
-
-        if (data.id) {
-          await updateDoc(doc(db, COLLECTIONS.TEAM_STRUCTURES, data.id), payload)
-          return data.id
-        }
-
-        const created = await addDoc(collection(db, COLLECTIONS.TEAM_STRUCTURES), {
-          ...payload,
-          createdBy: currentUser.uid,
-          createdAt: serverTimestamp(),
-        })
-        return created.id
-      }),
-    [currentUser, runAction],
   )
 
   const createTeam = useCallback(
@@ -320,6 +338,8 @@ export function useSportsSystem() {
           gender: data.gender || '',
           contactNumber: data.contactNumber?.trim() || '',
           preferredSport: data.preferredSport || '',
+          preferredSportId: data.preferredSportId || '',
+          preferredSportTeamStructure: data.preferredSportTeamStructure || null,
           skillLevel: data.skillLevel || '',
           updatedAt: serverTimestamp(),
         }),
@@ -331,14 +351,12 @@ export function useSportsSystem() {
     () => ({
       sports: sportsState.items,
       events: eventsState.items,
-      structures: structuresState.items,
       teams: teamsState.items,
       members: membersState.items,
       requests: requestsState.items,
       loading:
         sportsState.loading ||
         eventsState.loading ||
-        structuresState.loading ||
         teamsState.loading ||
         membersState.loading ||
         requestsState.loading,
@@ -346,12 +364,11 @@ export function useSportsSystem() {
         actionError ||
         sportsState.error ||
         eventsState.error ||
-        structuresState.error ||
         teamsState.error ||
         membersState.error ||
         requestsState.error,
     }),
-    [actionError, eventsState, membersState, requestsState, sportsState, structuresState, teamsState],
+    [actionError, eventsState, membersState, requestsState, sportsState, teamsState],
   )
 
   return {
@@ -361,7 +378,7 @@ export function useSportsSystem() {
     archiveSport,
     createEvent,
     updateEvent,
-    saveTeamStructure,
+    updateSportTeamStructure,
     createTeam,
     updateTeam,
     createJoinRequest,

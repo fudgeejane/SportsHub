@@ -32,17 +32,9 @@ export default function OrganizerTeamsPage() {
                     {roster.length}/{team.maxPlayers}
                   </span>
                 </div>
-                <div className="mt-4 grid gap-2">
-                  {roster.length ? (
-                    roster.map((member) => (
-                      <p key={member.id} className="rounded-xl bg-slate-50 px-3 py-2 text-sm font-semibold">
-                        {member.playerName} <span className="text-slate-400">({member.playerEmail})</span>
-                      </p>
-                    ))
-                  ) : (
-                    <p className="text-sm font-semibold text-slate-500">No players yet.</p>
-                  )}
-                </div>
+                <p className="mt-4 text-sm font-semibold text-slate-600">
+                  {roster.length ? `${roster.length} player${roster.length === 1 ? '' : 's'} registered` : 'No players yet.'}
+                </p>
               </article>
             )
           })}

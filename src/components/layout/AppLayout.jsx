@@ -78,7 +78,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-700">
+    <div className="app-layout min-h-screen bg-slate-50 text-slate-700">
       <aside
         className={`fixed inset-y-0 left-0 z-40 hidden border-r border-slate-200 bg-white transition-all duration-200 lg:block ${
           collapsed ? 'w-20' : 'w-72'
@@ -103,50 +103,46 @@ export default function AppLayout() {
         </div>
       ) : null}
 
-      <div className={`min-h-screen transition-all duration-200 ${sidebarWidth}`}>
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-slate-200 bg-white/90 px-4 backdrop-blur sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+      <div className={`flex min-h-screen flex-col transition-all duration-200 ${sidebarWidth}`}>
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
             <button
               onClick={() => setMobileOpen(true)}
-              className="grid h-10 w-10 place-items-center rounded-2xl border border-slate-200 text-slate-700 lg:hidden"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-slate-200 text-slate-700 lg:hidden"
               aria-label="Open sidebar"
             >
-              <Menu size={20} />
+              <Menu size={18} />
             </button>
             <button
               onClick={() => setCollapsed((current) => !current)}
-              className="hidden h-10 w-10 place-items-center rounded-2xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 lg:grid"
+              className="hidden h-9 w-9 shrink-0 place-items-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 lg:grid"
               aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-blue-600">SportsHub</p>
-              <h1 className="text-lg font-black text-slate-950 sm:text-xl">{pageTitle}</h1>
-            </div>
+            <h1 className="truncate text-base font-black text-slate-950 sm:text-lg">{pageTitle}</h1>
           </div>
 
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               onClick={() => setUserMenuOpen((current) => !current)}
-              className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-2 py-2 transition hover:bg-slate-50 sm:px-3"
+              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 transition hover:bg-slate-50 sm:gap-3 sm:px-3"
             >
-              <img src={currentUser?.photoURL || defaultAvatar} alt="" className="h-9 w-9 rounded-full object-cover" />
-              <span className="hidden max-w-48 truncate text-sm font-bold text-slate-700 md:inline">{currentUser?.email}</span>
+              <img src={currentUser?.photoURL || defaultAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+              <span className="hidden max-w-40 truncate text-sm font-semibold text-slate-700 md:inline">{currentUser?.email}</span>
             </button>
 
             {userMenuOpen ? (
-              <div className="absolute right-0 mt-2 w-72 rounded-3xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-900/10">
-                <div className="rounded-2xl bg-slate-50 p-3">
+              <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+                <div className="rounded-xl bg-slate-50 p-3">
                   <p className="truncate text-sm font-bold text-slate-950">{userProfile?.displayName || 'SportsHub User'}</p>
-                  <p className="truncate text-xs font-semibold text-slate-500">{currentUser?.email}</p>
-                  <p className="mt-2 text-xs font-black uppercase tracking-[0.14em] text-blue-600">{userProfile?.role}</p>
+                  <p className="truncate text-xs text-slate-500">{currentUser?.email}</p>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
                 >
-                  <LogOut size={17} />
+                  <LogOut size={16} />
                   Logout
                 </button>
               </div>
@@ -154,7 +150,7 @@ export default function AppLayout() {
           </div>
         </header>
 
-        <main className="h-[calc(100vh-4rem)] overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+        <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl">
             <Outlet />
           </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { isFirebaseConfigComplete } from '../../firebase'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
@@ -8,10 +8,20 @@ import { getFriendlyAuthError } from './authModalHelpers'
 
 export default function SignInModal({ onClose }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const { signIn } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({
+    email: location.state?.email || '',
+    password: '',
+  })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const statusMessage = location.state?.emailVerified
+    ? 'Email verified. Sign in to access your dashboard.'
+    : location.state?.verifyError
+      ? 'Verification link is invalid or expired. Sign in or request a new verification email.'
+      : null
 
   const updateField = (event) => {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
@@ -48,6 +58,10 @@ export default function SignInModal({ onClose }) {
 
   return (
     <AuthDialog title="Welcome back" onClose={onClose}>
+      {statusMessage ? (
+        <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">{statusMessage}</p>
+      ) : null}
+
       <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
         <label className="grid gap-2 text-sm font-semibold text-slate-700">
           Email

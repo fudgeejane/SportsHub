@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import {
+  applyActionCode,
   confirmPasswordReset,
   createUserWithEmailAndPassword,
   reload,
@@ -34,6 +35,8 @@ export function buildUserRecord(firebaseUser, role = ROLES.PLAYER, displayName =
     gender: '',
     contactNumber: '',
     preferredSport: '',
+    preferredSportId: '',
+    preferredSportTeamStructure: null,
     skillLevel: '',
   }
 }
@@ -173,7 +176,19 @@ export function useAuth() {
   )
 
   const signUp = useCallback(
-    async ({ email, password, displayName, role, age, gender, contactNumber, preferredSport, skillLevel }) => {
+    async ({
+      email,
+      password,
+      displayName,
+      role,
+      age,
+      gender,
+      contactNumber,
+      preferredSport,
+      preferredSportId,
+      preferredSportTeamStructure,
+      skillLevel,
+    }) => {
       const credential = await createUserWithEmailAndPassword(auth, email, password)
       await updateProfile(credential.user, { displayName })
       await firebaseSendEmailVerification(credential.user)
@@ -182,13 +197,20 @@ export function useAuth() {
         gender: gender || '',
         contactNumber: contactNumber || '',
         preferredSport: preferredSport || '',
-        skillLevel: skillLevel || '',
+        preferredSportId: preferredSportId || '',
+        preferredSportTeamStructure: preferredSportTeamStructure || null,
+        skillLevel: role === ROLES.PLAYER ? skillLevel || '' : '',
       })
-      await refreshUser()
+      await firebaseSignOut(auth)
       return credential.user
     },
-    [refreshUser],
+    [],
   )
+
+  const verifyEmailWithCode = useCallback(async (oobCode) => {
+    await applyActionCode(auth, oobCode)
+    if (auth.currentUser) await firebaseSignOut(auth)
+  }, [])
 
   const signInWithGoogle = useCallback(
     async (role = ROLES.PLAYER) => {
@@ -233,6 +255,7 @@ export function useAuth() {
       ...context,
       signIn,
       signUp,
+      verifyEmailWithCode,
       signOut,
       signInWithGoogle,
       sendEmailVerification,
@@ -254,6 +277,7 @@ export function useAuth() {
       signOut,
       signUp,
       updateUser,
+      verifyEmailWithCode,
     ],
   )
 }

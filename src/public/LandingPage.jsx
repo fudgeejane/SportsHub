@@ -22,6 +22,7 @@ import {
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal'
 import SignInModal from '../components/auth/SignInModal'
 import SignUpModal from '../components/auth/SignUpModal'
+import { useEmailVerificationHandler } from '../hooks/useEmailVerificationHandler'
 import heroBackground from '../assets/hero-section.jpg'
 import navLogo from '../assets/SportsHub.png'
 import { PUBLIC_ROUTES } from '../routes/public-routes'
@@ -92,6 +93,9 @@ export default function LandingPage({ authModal }) {
   const navigate = useNavigate()
   const location = useLocation()
   const heroSectionRef = useRef(null)
+  const signupSuccess = location.state?.signupSuccess
+
+  useEmailVerificationHandler()
 
   const scrollToSection = useCallback((href, behavior = 'smooth') => {
     const target = document.querySelector(href)
@@ -180,7 +184,12 @@ export default function LandingPage({ authModal }) {
   // GSAP animations removed; layout handled via CSS and Framer Motion
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f7f9fc] text-slate-700">
+    <div className="landing-page min-h-screen overflow-x-hidden bg-[#f7f9fc] text-slate-700">
+      {signupSuccess ? (
+        <div className="fixed inset-x-0 top-[var(--header-height)] z-40 border-b border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-semibold text-emerald-800 sm:px-6">
+          Check your inbox and verify your SportsHub account before accessing your dashboard.
+        </div>
+      ) : null}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/70 bg-white/90 shadow-sm shadow-slate-900/5 backdrop-blur-xl">
         <nav className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap lg:px-8">
           <Logo onHome={navigateHome} />

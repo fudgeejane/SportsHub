@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { isValidTeamStructure } from '../../constants/teamStructure'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
 
@@ -14,9 +15,26 @@ export default function PlayerProfilePage() {
     age: userProfile?.age || '',
     gender: userProfile?.gender || '',
     contactNumber: userProfile?.contactNumber || '',
+    preferredSportId: userProfile?.preferredSportId || '',
     preferredSport: userProfile?.preferredSport || '',
+    preferredSportTeamStructure: userProfile?.preferredSportTeamStructure || null,
     skillLevel: userProfile?.skillLevel || '',
   })
+
+  const sports = useMemo(
+    () => system.sports.filter((sport) => sport.status === 'ACTIVE' && sport.createdBy && isValidTeamStructure(sport.teamStructure)),
+    [system.sports],
+  )
+
+  const selectSport = (sportId) => {
+    const sport = sports.find((entry) => entry.id === sportId)
+    setForm((current) => ({
+      ...current,
+      preferredSportId: sportId,
+      preferredSport: sport?.name || '',
+      preferredSportTeamStructure: sport?.teamStructure || null,
+    }))
+  }
 
   const submit = async (event) => {
     event.preventDefault()
@@ -58,7 +76,19 @@ export default function PlayerProfilePage() {
           </label>
           <label className="grid gap-1 text-sm font-bold text-slate-700">
             Preferred sport
-            <input className={inputClass()} value={form.preferredSport} onChange={(event) => setForm({ ...form, preferredSport: event.target.value })} />
+            <select
+              required
+              className={inputClass()}
+              value={form.preferredSportId}
+              onChange={(event) => selectSport(event.target.value)}
+            >
+              <option value="">{sports.length ? 'Select sport' : 'No sports available'}</option>
+              {sports.map((sport) => (
+                <option key={sport.id} value={sport.id}>
+                  {sport.name}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="grid gap-1 text-sm font-bold text-slate-700">
             Skill level

@@ -56,6 +56,21 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/teams/$(teamId)).data;
     }
 
+    function selfProfileFieldsOnly() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
+        'displayName',
+        'age',
+        'gender',
+        'contactNumber',
+        'preferredSport',
+        'preferredSportId',
+        'preferredSportTeamStructure',
+        'skillLevel',
+        'emailVerified',
+        'updatedAt'
+      ]);
+    }
+
     match /users/{uid} {
       allow create: if isSelf(uid)
         && request.resource.data.uid == request.auth.uid
@@ -75,16 +90,7 @@ service cloud.firestore {
       allow update: if isSelf(uid)
         && request.resource.data.role == resource.data.role
         && request.resource.data.status == resource.data.status
-        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
-          'displayName',
-          'age',
-          'gender',
-          'contactNumber',
-          'preferredSport',
-          'skillLevel',
-          'emailVerified',
-          'updatedAt'
-        ]);
+        && selfProfileFieldsOnly();
 
       allow update: if isOrganizer()
         && request.resource.data.role in ['ADMIN', 'COMMUNITY_ORGANIZER', 'COACH', 'FACILITATOR', 'PLAYER']
@@ -94,16 +100,19 @@ service cloud.firestore {
     }
 
     match /sports/{sportId} {
-      allow read: if readOnlySportsAccess();
-      allow create, update, delete: if isOrganizer();
+      allow read: if signedIn() || resource.data.status == 'ACTIVE';
+
+      allow create: if isOrganizer()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.teamStructure is map
+        && request.resource.data.status in ['ACTIVE', 'ARCHIVED'];
+
+      allow update: if isOrganizer();
+
+      allow delete: if isOrganizer();
     }
 
     match /events/{eventId} {
-      allow read: if readOnlySportsAccess();
-      allow create, update, delete: if isOrganizer();
-    }
-
-    match /teamStructures/{structureId} {
       allow read: if readOnlySportsAccess();
       allow create, update, delete: if isOrganizer();
     }

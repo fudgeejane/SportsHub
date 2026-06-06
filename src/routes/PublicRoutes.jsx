@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Navigate, Route } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.jsx'
+import { canAccessDashboard } from '../utils/authAccess'
 import AccessDeniedPage from '../pages/auth/AccessDeniedPage'
 import AdminSetupPage from '../pages/auth/AdminSetupPage'
 import ApprovalPendingPage from '../pages/auth/ApprovalPendingPage'
@@ -31,8 +32,8 @@ function PublicOnlyRoute({ children }) {
     return null
   }
 
-  if (currentUser) {
-    return <Navigate to={getDashboardPath(userProfile?.role)} replace />
+  if (canAccessDashboard(currentUser, userProfile)) {
+    return <Navigate to={getDashboardPath(userProfile.role)} replace />
   }
 
   return children

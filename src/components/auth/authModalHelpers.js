@@ -4,7 +4,6 @@ export const roleOptions = [
   { value: ROLES.PLAYER, label: 'Player' },
   { value: ROLES.COACH, label: 'Coach' },
   { value: ROLES.FACILITATOR, label: 'Facilitator' },
-  { value: ROLES.COMMUNITY_ORGANIZER, label: 'Community Organizer' },
 ]
 
 export function getFriendlyAuthError(error) {

@@ -1,11 +1,25 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthPageShell from '../../components/auth/AuthPageShell'
+import { STATUSES } from '../../contexts/AuthContext'
 import { useAuth } from '../../hooks/useAuth.jsx'
+import { getDashboardPath } from '../../routes/navConfig'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
 
 export default function ApprovalPendingPage() {
   const { refreshUser, signOut, userProfile } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (userProfile?.status === STATUSES.APPROVED) {
+      navigate(getDashboardPath(userProfile.role), { replace: true })
+      return
+    }
+
+    if (userProfile?.status === STATUSES.REJECTED) {
+      navigate(PUBLIC_ROUTES.accessDenied, { replace: true })
+    }
+  }, [navigate, userProfile?.role, userProfile?.status])
 
   const handleSignOut = async () => {
     await signOut()

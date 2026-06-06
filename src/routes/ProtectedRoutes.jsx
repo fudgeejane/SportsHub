@@ -19,7 +19,6 @@ import OrganizerRequestsPage from '../pages/Organizer/Requests'
 import OrganizerSchedulePage from '../pages/Organizer/Schedule'
 import OrganizerSettingsPage from '../pages/Organizer/Settings'
 import OrganizerSportsPage from '../pages/Organizer/Sports'
-import OrganizerTeamStructuresPage from '../pages/Organizer/TeamStructures'
 import OrganizerTeamsPage from '../pages/Organizer/Teams'
 import OrganizerUsersPage from '../pages/Organizer/Users'
 import PlayerDashboard from '../pages/Player/Dashboard'
@@ -143,14 +142,6 @@ export const protectedRoutes = [
       element={
         <ProtectedRoute allowedRoles={organizerRoles}>
           <OrganizerEventsPage />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/organizer/team-structures"
-      element={
-        <ProtectedRoute allowedRoles={organizerRoles}>
-          <OrganizerTeamStructuresPage />
         </ProtectedRoute>
       }
     />

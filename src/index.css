@@ -28,14 +28,19 @@ body {
   overflow-x: hidden;
 }
 
-/* Make each top-level section fill the viewport minus the fixed header. */
-section {
+/* Landing sections fill viewport minus header; dashboard/auth pages opt out. */
+.landing-page > main > section {
   min-height: calc(100svh - var(--header-height));
   display: block;
 }
 
-section[id] {
+.landing-page > main > section[id] {
   scroll-margin-top: 0;
+}
+
+.auth-page-card,
+.app-layout section {
+  min-height: auto;
 }
 
 a {
@@ -530,4 +535,11 @@ summary {
   :root {
     --header-height: 4rem;
   }
+}
+
+
+.input {
+  background: #f7f7f7;
+  border: 2px #818181;
+  padding: 2px;
 }

@@ -1,5 +1,4 @@
 import {
-  Activity,
   BarChart3,
   CalendarDays,
   Home,
@@ -54,7 +53,6 @@ export const navConfig = {
     { label: 'Dashboard', path: '/organizer/dashboard', icon: Home },
     { label: 'Sports', path: '/organizer/sports', icon: Medal },
     { label: 'Events', path: '/organizer/events', icon: CalendarDays },
-    { label: 'Team Structures', path: '/organizer/team-structures', icon: Activity },
     { label: 'Teams & Rosters', path: '/organizer/teams', icon: Users },
     { label: 'Registrations', path: '/organizer/requests', icon: ListChecks },
     { label: 'Analytics', path: '/organizer/analytics', icon: BarChart3 },
@@ -72,7 +70,6 @@ export const navConfig = {
     { label: 'Facilitator Accounts', path: '/organizer/facilitators', icon: ShieldCheck },
     { label: 'Sports', path: '/organizer/sports', icon: Medal },
     { label: 'Events', path: '/organizer/events', icon: CalendarDays },
-    { label: 'Team Structures', path: '/organizer/team-structures', icon: Activity },
     { label: 'Teams & Rosters', path: '/organizer/teams', icon: Users },
     { label: 'Registrations', path: '/organizer/requests', icon: ListChecks },
     { label: 'Analytics', path: '/organizer/analytics', icon: BarChart3 },

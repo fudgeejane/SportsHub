@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
 
-const emptyEvent = { name: '', sportId: '', venue: '', eventDate: '', status: 'OPEN' }
+const emptyEvent = { name: '', sportId: '', venue: '', eventDate: '', startTime: '', endTime: '', status: 'OPEN' }
 
 function inputClass() {
   return 'min-h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
@@ -9,6 +9,14 @@ function inputClass() {
 
 function pickName(items, id) {
   return items.find((item) => item.id === id)?.name || ''
+}
+
+function formatSchedule(item) {
+  const date = item.eventDate || 'TBA'
+  const start = item.startTime || ''
+  const end = item.endTime || ''
+  if (!start) return date
+  return end ? `${date} ${start} - ${end}` : `${date} ${start}`
 }
 
 export default function OrganizerEventsPage() {
@@ -32,7 +40,7 @@ export default function OrganizerEventsPage() {
           <p className="mt-1 text-sm leading-6 text-slate-600">Create and manage sports events linked to active sports.</p>
         </div>
 
-        <form onSubmit={submit} className="grid gap-3 md:grid-cols-5">
+        <form onSubmit={submit} className="grid gap-3 md:grid-cols-3 lg:grid-cols-4">
           <label className="grid gap-1 text-sm font-bold text-slate-700">
             Event name
             <input required className={inputClass()} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
@@ -58,17 +66,25 @@ export default function OrganizerEventsPage() {
             Date
             <input type="date" className={inputClass()} value={form.eventDate} onChange={(event) => setForm({ ...form, eventDate: event.target.value })} />
           </label>
-          <button className="self-end rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white hover:bg-blue-700">Create</button>
+          <label className="grid gap-1 text-sm font-bold text-slate-700">
+            Start time
+            <input type="time" className={inputClass()} value={form.startTime} onChange={(event) => setForm({ ...form, startTime: event.target.value })} />
+          </label>
+          <label className="grid gap-1 text-sm font-bold text-slate-700">
+            End time (optional)
+            <input type="time" className={inputClass()} value={form.endTime} onChange={(event) => setForm({ ...form, endTime: event.target.value })} />
+          </label>
+          <button className="self-end rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white hover:bg-blue-700 md:col-span-2 lg:col-span-1">Create</button>
         </form>
 
         <div className="mt-5 overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm">
+          <table className="w-full min-w-[860px] text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
               <tr>
                 <th className="px-4 py-3">Event</th>
                 <th className="px-4 py-3">Sport</th>
                 <th className="px-4 py-3">Venue</th>
-                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Schedule</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Actions</th>
               </tr>
@@ -79,7 +95,7 @@ export default function OrganizerEventsPage() {
                   <td className="px-4 py-3 font-bold text-slate-950">{item.name}</td>
                   <td className="px-4 py-3">{item.sportName}</td>
                   <td className="px-4 py-3">{item.venue || 'TBA'}</td>
-                  <td className="px-4 py-3">{item.eventDate || 'TBA'}</td>
+                  <td className="px-4 py-3">{formatSchedule(item)}</td>
                   <td className="px-4 py-3">{item.status}</td>
                   <td className="px-4 py-3">
                     <select className={inputClass()} value={item.status} onChange={(event) => system.updateEvent(item.id, { status: event.target.value })}>

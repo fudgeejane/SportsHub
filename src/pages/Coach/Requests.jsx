@@ -1,10 +1,8 @@
 import { JOIN_REQUEST_STATUS, useSportsSystem } from '../../hooks/useSportsSystem.jsx'
-import { useAuth } from '../../hooks/useAuth.jsx'
 
 export default function CoachRequestsPage() {
-  const { currentUser } = useAuth()
   const system = useSportsSystem()
-  const requests = system.requests.filter((request) => request.coachId === currentUser.uid)
+  const requests = system.requests
 
   return (
     <section className="grid gap-4">
