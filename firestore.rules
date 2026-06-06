@@ -1,0 +1,57 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function isApprovedOrganizer() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && userDoc(request.auth.uid).data.role in ['COMMUNITY_ORGANIZER', 'ADMIN']
+        && userDoc(request.auth.uid).data.status == 'APPROVED'
+        && userDoc(request.auth.uid).data.emailVerified == true;
+    }
+
+    match /users/{uid} {
+      allow create: if isSelf(uid)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.role in ['COMMUNITY_ORGANIZER', 'COACH', 'FACILITATOR', 'PLAYER'];
+
+      allow create: if isSelf(uid)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == 'APPROVED'
+        && request.resource.data.role == 'COMMUNITY_ORGANIZER'
+        && request.resource.data.approvedBy == request.auth.uid;
+
+      allow read: if isSelf(uid) || isApprovedOrganizer();
+
+      allow update: if isSelf(uid)
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly(['emailVerified'])
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.role == resource.data.role;
+
+      allow update: if isApprovedOrganizer()
+        && request.resource.data.role in ['ADMIN', 'COMMUNITY_ORGANIZER', 'COACH', 'FACILITATOR', 'PLAYER']
+        && request.resource.data.status in ['PENDING', 'APPROVED', 'REJECTED'];
+
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,540 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f7f9fc;
+  color: #334155;
+  --header-height: 7.25rem;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-height);
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Make each top-level section fill the viewport minus the fixed header */
+section {
+  min-height: calc(100svh - var(--header-height));
+  display: block;
+}
+
+/* Ensure anchor navigation accounts for the fixed header */
+@supports (scroll-margin-top: 1px) {
+  section[id] {
+    scroll-margin-top: var(--header-height);
+  }
+}
+
+/* Anchor offset: ensure section headings sit flush under the fixed header
+   when navigating via fragment links, regardless of section padding. */
+section[id]::before {
+  content: "";
+  display: block;
+  height: var(--header-height);
+  margin-top: calc(-1 * var(--header-height));
+  visibility: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+summary {
+  font: inherit;
+}
+
+.hero-mesh {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(20, 184, 166, 0.18), transparent 28rem),
+    radial-gradient(circle at 84% 20%, rgba(99, 102, 241, 0.15), transparent 26rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 249, 252, 0));
+}
+
+.section-band {
+  padding: 4.25rem 0;
+}
+
+.dashboard-shell {
+  display: grid;
+  grid-template-columns: minmax(9.5rem, 0.28fr) 1fr;
+  gap: 1rem;
+  width: min(100%, 58rem);
+  min-height: 31rem;
+  margin-inline: auto;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 2rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(239, 246, 255, 0.86)),
+    #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.16);
+}
+
+.dashboard-shell-compact {
+  width: min(100%, 64rem);
+}
+
+.dashboard-sidebar,
+.dashboard-main,
+.feature-card,
+.step-card,
+.benefit-card,
+.testimonial-card,
+.pricing-card,
+.faq-item {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.dashboard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+  padding: 1rem;
+  border-radius: 1.4rem;
+}
+
+.dashboard-sidebar a {
+  margin-bottom: 0.8rem;
+}
+
+.dashboard-sidebar > span {
+  display: flex;
+  min-height: 2.4rem;
+  align-items: center;
+  border-radius: 0.85rem;
+  padding: 0 0.85rem;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.dashboard-sidebar > span.active {
+  background: #ecfeff;
+  color: #0f172a;
+}
+
+.dashboard-main {
+  min-width: 0;
+  padding: 1rem;
+  border-radius: 1.4rem;
+}
+
+.dashboard-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-topbar p,
+.dashboard-topbar strong {
+  display: block;
+}
+
+.dashboard-topbar p {
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.dashboard-topbar strong {
+  color: #0f172a;
+  font-size: 1.7rem;
+}
+
+.avatar-stack {
+  display: flex;
+}
+
+.avatar-stack span {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  margin-left: -0.45rem;
+  place-items: center;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.metric-card,
+.kanban-card,
+.activity-feed,
+.chart-card {
+  min-height: 8rem;
+  border-radius: 1.2rem;
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.metric-card svg {
+  color: #0891b2;
+}
+
+.metric-card span,
+.activity-feed span {
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.metric-card strong {
+  color: #0f172a;
+  font-size: 2rem;
+}
+
+.wide {
+  grid-column: span 2;
+}
+
+.calendar-dots {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.4rem;
+  margin-top: 0.8rem;
+}
+
+.calendar-dots i {
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.calendar-dots i.filled {
+  background: #22d3ee;
+}
+
+.kanban-card {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.kanban-card div {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.kanban-card span {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.kanban-card b {
+  display: block;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #22d3ee, #34d399);
+}
+
+.activity-feed,
+.chart-card {
+  grid-column: span 2;
+}
+
+.activity-feed p {
+  margin-top: 0.75rem;
+  border-radius: 0.85rem;
+  background: #ffffff;
+  padding: 0.75rem;
+  color: #475569;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.chart-card {
+  display: flex;
+  align-items: end;
+  gap: 0.55rem;
+}
+
+.chart-card i {
+  flex: 1;
+  min-height: 2rem;
+  border-radius: 999px 999px 0.45rem 0.45rem;
+  background: linear-gradient(180deg, #818cf8, #22d3ee);
+}
+
+.feature-card,
+.step-card,
+.benefit-card,
+.testimonial-card,
+.pricing-card {
+  border-radius: 1.4rem;
+  padding: 1.35rem;
+}
+
+.feature-card h3,
+.step-card h3,
+.benefit-card h3,
+.pricing-card h3 {
+  margin: 1rem 0 0.75rem;
+  color: #0f172a;
+  font-size: 1.1rem;
+  font-weight: 850;
+}
+
+.feature-card ul,
+.pricing-card ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feature-card li,
+.pricing-card li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.feature-card li svg,
+.pricing-card li svg {
+  flex: 0 0 auto;
+  color: #0891b2;
+}
+
+.icon-tile {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: #ecfeff;
+  color: #0f766e;
+}
+
+.step-card {
+  position: relative;
+}
+
+.step-card span {
+  color: #0891b2;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.step-card svg,
+.benefit-card svg {
+  margin-top: 1.4rem;
+  color: #0891b2;
+}
+
+.step-card p,
+.benefit-card p,
+.testimonial-card p {
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.benefit-card {
+  min-height: 13rem;
+}
+
+.testimonial-card .avatar {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0f172a, #0f766e);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.testimonial-card p {
+  margin: 1.4rem 0;
+}
+
+.testimonial-card strong,
+.testimonial-card span {
+  display: block;
+}
+
+.testimonial-card strong {
+  color: #0f172a;
+}
+
+.testimonial-card span {
+  margin-top: 0.15rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.pricing-card {
+  position: relative;
+}
+
+.pricing-card.recommended {
+  border-color: rgba(8, 145, 178, 0.38);
+  background: linear-gradient(180deg, #ffffff, #ecfeff);
+  box-shadow: 0 26px 70px rgba(8, 145, 178, 0.16);
+}
+
+.badge {
+  display: inline-flex;
+  border-radius: 999px;
+  background: #cffafe;
+  padding: 0.35rem 0.7rem;
+  color: #155e75;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.price {
+  margin: 1rem 0;
+  color: #0f172a;
+  font-size: 2.7rem;
+  font-weight: 900;
+}
+
+.price small {
+  margin-left: 0.2rem;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.pricing-card a {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.4rem;
+  border-radius: 999px;
+  background: #0f172a;
+  padding: 0.85rem 1rem;
+  color: #ffffff;
+  font-weight: 850;
+}
+
+.faq-item {
+  margin-top: 0.8rem;
+  overflow: hidden;
+  border-radius: 1.1rem;
+}
+
+.faq-item summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  color: #0f172a;
+  font-weight: 850;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item p {
+  padding: 0 1.25rem 1.1rem;
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.faq-item[open] summary svg {
+  rotate: 180deg;
+}
+
+@media (max-width: 900px) {
+  .dashboard-shell {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .dashboard-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  html {
+    scroll-padding-top: 7.25rem;
+  }
+
+  .section-band {
+    padding: 3.25rem 0;
+  }
+
+  .dashboard-shell {
+    padding: 0.65rem;
+    border-radius: 1.35rem;
+  }
+
+  .dashboard-main {
+    padding: 0.75rem;
+    border-radius: 1rem;
+  }
+
+  .dashboard-topbar {
+    align-items: flex-start;
+  }
+
+  .dashboard-topbar strong {
+    font-size: 1.3rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wide,
+  .activity-feed,
+  .chart-card {
+    grid-column: span 1;
+  }
+
+  .metric-card,
+  .kanban-card,
+  .activity-feed,
+  .chart-card {
+    min-height: 7rem;
+  }
+}
