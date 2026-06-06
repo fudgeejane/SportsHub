@@ -7,8 +7,9 @@ function inputClass() {
 
 export default function PlayerTeamsPage() {
   const system = useSportsSystem()
+  const [sportId, setSportId] = useState('')
   const [messages, setMessages] = useState({})
-  const activeTeams = system.teams.filter((team) => team.status === 'ACTIVE')
+  const activeTeams = system.teams.filter((team) => team.status === 'ACTIVE' && team.coachId && (!sportId || team.sportId === sportId))
 
   return (
     <section className="grid gap-4">
@@ -18,11 +19,23 @@ export default function PlayerTeamsPage() {
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/5">
         <div className="mb-5">
           <h2 className="text-xl font-black text-slate-950">Browse Teams</h2>
-          <p className="mt-1 text-sm leading-6 text-slate-600">Find teams and submit join requests for coach approval.</p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">Select a sport, then choose an available team for coach approval.</p>
         </div>
 
+        <label className="mb-5 grid max-w-md gap-1 text-sm font-bold text-slate-700">
+          Sport
+          <select className={inputClass()} value={sportId} onChange={(event) => setSportId(event.target.value)}>
+            <option value="">Select a sport</option>
+            {system.sports.filter((sport) => sport.status !== 'ARCHIVED').map((sport) => (
+              <option key={sport.id} value={sport.id}>
+                {sport.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <div className="grid gap-4 lg:grid-cols-2">
-          {activeTeams.map((team) => {
+          {sportId ? activeTeams.map((team) => {
             const roster = system.members.filter((member) => member.teamId === team.id)
 
             return (
@@ -46,8 +59,9 @@ export default function PlayerTeamsPage() {
                 </button>
               </article>
             )
-          })}
-          {!activeTeams.length ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No teams are available yet.</p> : null}
+          }) : null}
+          {!sportId ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">Select a sport to see available teams.</p> : null}
+          {sportId && !activeTeams.length ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No teams are available for this sport yet.</p> : null}
         </div>
       </section>
     </section>

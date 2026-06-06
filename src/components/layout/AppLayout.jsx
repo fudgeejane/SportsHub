@@ -1,28 +1,34 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, LogOut, Menu, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, LogOut, Menu, X, EllipsisVertical, Triangle } from 'lucide-react'
 import defaultAvatar from '../../assets/default-avatar.svg'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { getAllowedNav, getRoleKey } from '../../routes/navConfig'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
+import Logo from '../../assets/SportsHub.png'
+import { AnimatePresence, motion } from 'framer-motion';
 
 function SidebarContent({ collapsed, onNavigate, onLogout }) {
   const { signOut, userProfile } = useAuth()
   const navItems = getAllowedNav(userProfile?.role)
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-4">
-        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-blue-600 font-black text-white">S</div>
-        {!collapsed ? (
-          <div className="min-w-0">
-            <p className="truncate text-sm font-black uppercase tracking-[0.18em] text-blue-600">SportsHub</p>
-            <p className="truncate text-xs font-semibold text-slate-500">{getRoleKey(userProfile?.role)} workspace</p>
-          </div>
-        ) : null}
-      </div>
+    <div className="flex h-full flex-col bg-white pt-8">
 
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+      <div className='flex flex-col items-center justify-center pb-8'>
+          <img src={Logo} 
+            className={` ${collapsed ? `w-10 h-10` :`w-15 h-15`}`}
+          />
+          {!collapsed 
+            ? <h1 className='text-lg sm:text-xl md:text-2xl text-blue-500 font-bold'>
+              SportsHub
+          </h1>
+          : null
+          }
+      </div>
+    
+
+      <nav className="flex-1 space-y-2 overflow-y-auto p-4">
         {navItems.map((item) => {
           const Icon = item.icon
           return (
@@ -31,23 +37,23 @@ function SidebarContent({ collapsed, onNavigate, onLogout }) {
               to={item.path}
               onClick={onNavigate}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold transition ${
-                  isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+                `flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  isActive ? 'bg-blue-600 !text-white shadow-lg shadow-blue-600/20' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
                 } ${collapsed ? 'justify-center' : ''}`
               }
               title={collapsed ? item.label : undefined}
             >
-              <Icon size={19} />
+              <Icon size={18} />
               {!collapsed ? <span className="truncate">{item.label}</span> : null}
             </NavLink>
           )
         })}
       </nav>
 
-      <div className="border-t border-slate-200 p-3">
+      <div className="border-t border-slate-200 p-4">
         <button
           onClick={onLogout || signOut}
-          className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm font-bold text-slate-600 transition hover:bg-red-50 hover:text-red-600 ${
+          className={`flex w-full items-center gap-3 rounded-lg cursor-pointer px-3 py-3 !text-sm font-bold text-slate-600 transition hover:bg-red-50 hover:text-red-600 ${
             collapsed ? 'justify-center' : ''
           }`}
           title={collapsed ? 'Logout' : undefined}
@@ -113,14 +119,38 @@ export default function AppLayout() {
             >
               <Menu size={18} />
             </button>
-            <button
-              onClick={() => setCollapsed((current) => !current)}
-              className="hidden h-9 w-9 shrink-0 place-items-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 lg:grid"
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-            </button>
-            <h1 className="truncate text-base font-black text-slate-950 sm:text-lg">{pageTitle}</h1>
+        <button
+          onClick={() => setCollapsed((current) => !current)}
+          className="hidden h-9 w-9 shrink-0 place-items-center rounded-lg cursor-pointer border border-slate-200 text-slate-700 hover:bg-slate-50 lg:grid"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <AnimatePresence mode="wait">
+            {collapsed ? (
+              <motion.div
+                key="menu"
+                initial={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                exit={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Menu size={16} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="triangle"
+                initial={{ opacity: 0, rotate: 90, scale: 0.8 }}
+                animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                exit={{ opacity: 0, rotate: -90, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Triangle
+                  size={14}
+                  className="-rotate-90"  // 👈 faces LEFT
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </button>
           </div>
 
           <div className="relative shrink-0">

@@ -53,7 +53,12 @@ export function AuthProvider({ children }) {
           hasInitialized.current = true
         },
         (error) => {
-          setAuthError(error.message)
+          // Handle browser blocking Firestore connections
+          const errorMessage = error.code === 'unavailable' || error.message?.includes('ERR_BLOCKED_BY_CLIENT')
+            ? 'Connection blocked by browser. Please disable ad blockers, privacy extensions, or firewall restrictions to access Firestore.'
+            : error.message
+          
+          setAuthError(errorMessage)
           setUserProfile(null)
           setLoading(false)
           hasInitialized.current = true

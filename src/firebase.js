@@ -2,6 +2,7 @@ import { getAnalytics, isSupported } from 'firebase/analytics'
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -16,6 +17,7 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
+export const storage = getStorage(app)
 export const googleProvider = new GoogleAuthProvider()
 
 export const firebaseConfigStatus = {
@@ -23,6 +25,7 @@ export const firebaseConfigStatus = {
   hasAuthDomain: Boolean(firebaseConfig.authDomain),
   hasProjectId: Boolean(firebaseConfig.projectId),
   hasAppId: Boolean(firebaseConfig.appId),
+  hasStorageBucket: Boolean(firebaseConfig.storageBucket),
 }
 
 export const isFirebaseConfigComplete = Object.values(firebaseConfigStatus).every(Boolean)

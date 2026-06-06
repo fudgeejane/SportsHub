@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { STATUSES } from '../../contexts/AuthContext'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { isFirebaseConfigComplete } from '../../firebase'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
@@ -9,7 +10,7 @@ import { getFriendlyAuthError } from './authModalHelpers'
 export default function SignInModal({ onClose }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { signIn } = useAuth()
+  const { checkUserStatus, currentUser, loading: authLoading, userProfile, signIn } = useAuth()
   const [form, setForm] = useState({
     email: location.state?.email || '',
     password: '',
@@ -27,6 +28,25 @@ export default function SignInModal({ onClose }) {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
   }
 
+  useEffect(() => {
+    if (authLoading || !currentUser || !userProfile) return
+
+    if (!currentUser.emailVerified && !userProfile.emailVerified) {
+      navigate(PUBLIC_ROUTES.verifyEmail, { replace: true })
+      return
+    }
+
+    if (userProfile.status === STATUSES.REJECTED && userProfile.role !== 'PLAYER') {
+      navigate(PUBLIC_ROUTES.accessDenied, { replace: true })
+      return
+    }
+
+    if (userProfile.status !== STATUSES.APPROVED) {
+      navigate(PUBLIC_ROUTES.approvalPending, { replace: true })
+      return
+    }
+  }, [authLoading, currentUser, navigate, userProfile])
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
@@ -39,7 +59,24 @@ export default function SignInModal({ onClose }) {
     setLoading(true)
 
     try {
-      await signIn(form.email, form.password)
+      const user = await signIn(form.email, form.password)
+      const profile = await checkUserStatus(user.uid)
+
+      if (!user.emailVerified && !profile?.emailVerified) {
+        navigate(PUBLIC_ROUTES.verifyEmail, { replace: true })
+        return
+      }
+
+      if (profile?.status === STATUSES.REJECTED && profile?.role !== 'PLAYER') {
+        navigate(PUBLIC_ROUTES.accessDenied, { replace: true })
+        return
+      }
+
+      if (profile?.status !== STATUSES.APPROVED) {
+        navigate(PUBLIC_ROUTES.approvalPending, { replace: true })
+        return
+      }
+
       navigate('/dashboard', { replace: true })
     } catch (authError) {
       setError(getFriendlyAuthError(authError))

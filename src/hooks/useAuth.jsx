@@ -14,19 +14,26 @@ import {
   updateProfile,
 } from 'firebase/auth'
 import { collection, doc, getDoc, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { MEMBERSHIP_STATUS } from '../constants/membership'
+import { toastError, toastSuccess } from '../utils/toast'
 import { AuthContext, ROLES, STATUSES } from '../contexts/AuthContext.jsx'
 import { auth, db, googleProvider } from '../firebase'
+import { createPendingJoinRequest } from '../utils/joinRequests'
 import { useGlobalLoading } from './useGlobalLoading.jsx'
 
 export { AuthContext, ROLES, STATUSES }
 
 export function buildUserRecord(firebaseUser, role = ROLES.PLAYER, displayName = '') {
+  const needsOrganizerApproval = role === ROLES.COACH || role === ROLES.FACILITATOR
+  const isPlayer = role === ROLES.PLAYER
+
   return {
     uid: firebaseUser.uid,
     email: firebaseUser.email,
     displayName: displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'SportsHub User',
     role,
-    status: STATUSES.PENDING,
+    status: isPlayer || needsOrganizerApproval ? STATUSES.PENDING : STATUSES.APPROVED,
+    approvalStatus: isPlayer || needsOrganizerApproval ? STATUSES.PENDING : STATUSES.APPROVED,
     emailVerified: firebaseUser.emailVerified,
     createdAt: serverTimestamp(),
     approvedBy: null,
@@ -37,7 +44,13 @@ export function buildUserRecord(firebaseUser, role = ROLES.PLAYER, displayName =
     preferredSport: '',
     preferredSportId: '',
     preferredSportTeamStructure: null,
+    membershipStatus: isPlayer ? MEMBERSHIP_STATUS.PENDING_COACH_APPROVAL : 'ACTIVE',
     skillLevel: '',
+    aggregatedTeamSkill: 0,
+    assignedTeamId: '',
+    assignedTeamName: '',
+    paymentStatus: 'PENDING',
+    paymentMethod: '',
   }
 }
 
@@ -69,6 +82,7 @@ export async function createAdminUser({ email, password, displayName, role = ROL
   await updateProfile(credential.user, { displayName })
   await createUserRecord(credential.user, role, displayName, {
     status: STATUSES.APPROVED,
+    approvalStatus: STATUSES.APPROVED,
     emailVerified: true,
     approvedBy: credential.user.uid,
     approvedAt: serverTimestamp(),
@@ -88,7 +102,13 @@ export function useUserManagement(reviewerId) {
     const unsubscribe = onSnapshot(
       usersQuery,
       (snapshot) => {
-        setUsers(snapshot.docs.map((userDoc) => ({ id: userDoc.id, ...userDoc.data() })))
+        setUsers(
+          snapshot.docs.map((userDoc) => ({
+            id: userDoc.id,
+            uid: userDoc.data()?.uid || userDoc.id,
+            ...userDoc.data(),
+          })),
+        )
         setLoading(false)
       },
       (snapshotError) => {
@@ -121,6 +141,7 @@ export function useUserManagement(reviewerId) {
     (uid) =>
       runUserUpdate(uid, {
         status: STATUSES.APPROVED,
+        approvalStatus: STATUSES.APPROVED,
         approvedBy: reviewerId,
         approvedAt: serverTimestamp(),
       }),
@@ -131,6 +152,7 @@ export function useUserManagement(reviewerId) {
     (uid) =>
       runUserUpdate(uid, {
         status: STATUSES.REJECTED,
+        approvalStatus: STATUSES.REJECTED,
         approvedBy: reviewerId,
         approvedAt: serverTimestamp(),
       }),
@@ -168,9 +190,33 @@ export function useAuth() {
 
   const signIn = useCallback(
     async (email, password) => {
-      const credential = await signInWithEmailAndPassword(auth, email, password)
-      await refreshUser()
-      return credential.user
+      try {
+        const credential = await signInWithEmailAndPassword(auth, email, password)
+        void refreshUser().catch(() => {})
+        return credential.user
+      } catch (signInError) {
+        // Handle browser blocking Firestore connections
+        if (signInError.code === 'unavailable' || signInError.message?.includes('ERR_BLOCKED_BY_CLIENT')) {
+          toastError('⚠️ Connection blocked by browser. Please disable ad blockers or privacy extensions.')
+          const blockError = new Error('Connection blocked by browser')
+          blockError.code = 'client-blocked'
+          throw blockError
+        }
+        
+        // Handle common Firebase auth errors
+        if (signInError.code === 'auth/user-not-found') {
+          toastError('Invalid credentials')
+        } else if (signInError.code === 'auth/wrong-password') {
+          toastError('Invalid credentials')
+        } else if (signInError.code === 'auth/invalid-email') {
+          toastError('Invalid credentials')
+        } else if (signInError.code === 'auth/user-disabled') {
+          toastError('Invalid credentials')
+        } else {
+          toastError(`✗ Sign in failed: ${signInError.message}`)
+        }
+        throw signInError
+      }
     },
     [refreshUser],
   )
@@ -188,67 +234,198 @@ export function useAuth() {
       preferredSportId,
       preferredSportTeamStructure,
       skillLevel,
+      selectedTeamId,
+      selectedTeamName,
+      selectedTeamCoachId,
     }) => {
-      const credential = await createUserWithEmailAndPassword(auth, email, password)
-      await updateProfile(credential.user, { displayName })
-      await firebaseSendEmailVerification(credential.user)
-      await createUserRecord(credential.user, role, displayName, {
-        age: age || '',
-        gender: gender || '',
-        contactNumber: contactNumber || '',
-        preferredSport: preferredSport || '',
-        preferredSportId: preferredSportId || '',
-        preferredSportTeamStructure: preferredSportTeamStructure || null,
-        skillLevel: role === ROLES.PLAYER ? skillLevel || '' : '',
-      })
-      await firebaseSignOut(auth)
-      return credential.user
+      try {
+        const credential = await createUserWithEmailAndPassword(auth, email, password)
+        await updateProfile(credential.user, { displayName })
+        
+        try {
+          await firebaseSendEmailVerification(credential.user)
+        } catch (emailError) {
+          console.warn('Email verification failed:', emailError)
+          // Continue with signup even if email verification fails
+        }
+
+        const isPlayer = role === ROLES.PLAYER
+
+        await createUserRecord(credential.user, role, displayName, {
+          age: age || '',
+          gender: gender || '',
+          contactNumber: contactNumber || '',
+          preferredSport: preferredSport || '',
+          preferredSportId: preferredSportId || '',
+          preferredSportTeamStructure: preferredSportTeamStructure || null,
+          skillLevel: isPlayer ? skillLevel || '' : '',
+          requestedTeamId: isPlayer ? selectedTeamId || '' : '',
+          requestedTeamName: isPlayer ? selectedTeamName || '' : '',
+        })
+
+        if (isPlayer && selectedTeamId) {
+          await createPendingJoinRequest({
+            player: {
+              uid: credential.user.uid,
+              email,
+              displayName,
+            },
+            team: {
+              id: selectedTeamId,
+              name: selectedTeamName,
+              sportId: preferredSportId,
+              sportName: preferredSport,
+              coachId: selectedTeamCoachId,
+            },
+            skillLevel,
+          })
+        }
+
+        await firebaseSignOut(auth)
+        toastSuccess(isPlayer ? 'Application submitted. Verify your email first, then wait for coach approval.' : 'Please verify your email, then wait for organizer approval.')
+        return credential.user
+      } catch (error) {
+        // Handle browser blocking Firestore connections
+        if (error.code === 'unavailable' || error.message?.includes('ERR_BLOCKED_BY_CLIENT')) {
+          toastError('⚠️ Connection blocked by browser. Please disable ad blockers, privacy extensions, or try incognito mode.')
+          const blockError = new Error('Connection blocked by browser')
+          blockError.code = 'client-blocked'
+          throw blockError
+        }
+        
+        // Handle common Firebase auth errors
+        if (error.code === 'auth/email-already-in-use') {
+          toastError('✗ Email already in use. Please sign in instead.')
+        } else if (error.code === 'auth/invalid-email') {
+          toastError('✗ Invalid email address')
+        } else if (error.code === 'auth/weak-password') {
+          toastError('✗ Password is too weak. Use at least 6 characters.')
+        } else if (error.code === 'permission-denied') {
+          toastError('✗ Permission denied. Please check Firestore rules.')
+        } else {
+          toastError(`✗ Signup failed: ${error.message || 'Please try again'}`)
+        }
+        throw error
+      }
     },
     [],
   )
 
   const verifyEmailWithCode = useCallback(async (oobCode) => {
-    await applyActionCode(auth, oobCode)
-    if (auth.currentUser) await firebaseSignOut(auth)
+    try {
+      await applyActionCode(auth, oobCode)
+      if (auth.currentUser) await firebaseSignOut(auth)
+      toastSuccess('✓ Email verified successfully!')
+    } catch (error) {
+      toastError(`✗ Email verification failed: ${error.message}`)
+      throw error
+    }
   }, [])
 
   const signInWithGoogle = useCallback(
     async (role = ROLES.PLAYER) => {
-      const credential = await signInWithPopup(auth, googleProvider)
-      const profile = await getUserProfile(credential.user.uid)
+      try {
+        const credential = await signInWithPopup(auth, googleProvider)
+        const profile = await getUserProfile(credential.user.uid)
 
-      if (!profile) {
-        await createUserRecord(credential.user, role, credential.user.displayName)
-      } else if (credential.user.emailVerified) {
-        await updateUserEmailVerified(credential.user.uid, credential.user.emailVerified)
+        if (!profile) {
+          await createUserRecord(credential.user, role, credential.user.displayName)
+        } else if (credential.user.emailVerified) {
+          await updateUserEmailVerified(credential.user.uid, credential.user.emailVerified)
+        }
+
+        await refreshUser()
+        toastSuccess('✓ Signed in with Google successfully')
+        return credential.user
+      } catch (error) {
+        if (error.code === 'auth/popup-closed-by-user') {
+          toastError('✗ Sign in cancelled')
+        } else if (error.code === 'auth/popup-blocked') {
+          toastError('✗ Popup blocked. Please allow popups for this site.')
+        } else {
+          toastError(`✗ Google sign in failed: ${error.message}`)
+        }
+        throw error
       }
-
-      await refreshUser()
-      return credential.user
     },
     [refreshUser],
   )
 
-  const signOut = useCallback(() => firebaseSignOut(auth), [])
+  const signOut = useCallback(async () => {
+    try {
+      await firebaseSignOut(auth)
+      toastSuccess('✓ Signed out successfully')
+    } catch (error) {
+      toastError(`✗ Sign out failed: ${error.message}`)
+      throw error
+    }
+  }, [])
 
   const sendEmailVerification = useCallback(async () => {
-    if (!auth.currentUser) throw new Error('No authenticated user found.')
-    await firebaseSendEmailVerification(auth.currentUser)
+    try {
+      if (!auth.currentUser) throw new Error('No authenticated user found.')
+      await firebaseSendEmailVerification(auth.currentUser)
+      toastSuccess('✓ Verification email sent! Check your inbox.')
+    } catch (error) {
+      if (error.code === 'auth/too-many-requests') {
+        toastError('✗ Too many requests. Please wait before trying again.')
+      } else {
+        toastError(`✗ Failed to send verification email: ${error.message}`)
+      }
+      throw error
+    }
   }, [])
 
-  const forgotPassword = useCallback((email) => sendPasswordResetEmail(auth, email), [])
+  const forgotPassword = useCallback(async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email)
+      toastSuccess('✓ Password reset email sent! Check your inbox.')
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        toastError('✗ No account found with this email')
+      } else if (error.code === 'auth/invalid-email') {
+        toastError('✗ Invalid email address')
+      } else {
+        toastError(`✗ Failed to send reset email: ${error.message}`)
+      }
+      throw error
+    }
+  }, [])
 
   const resetPassword = useCallback(async (newPassword, actionCode) => {
-    if (actionCode) {
-      await confirmPasswordReset(auth, actionCode, newPassword)
-      return
-    }
+    try {
+      if (actionCode) {
+        await confirmPasswordReset(auth, actionCode, newPassword)
+        toastSuccess('✓ Password reset successfully! You can now sign in.')
+        return
+      }
 
-    if (!auth.currentUser) throw new Error('Use the reset link from your email or sign in before changing your password.')
-    await updatePassword(auth.currentUser, newPassword)
+      if (!auth.currentUser) throw new Error('Use the reset link from your email or sign in before changing your password.')
+      await updatePassword(auth.currentUser, newPassword)
+      toastSuccess('✓ Password updated successfully!')
+    } catch (error) {
+      if (error.code === 'auth/weak-password') {
+        toastError('✗ Password is too weak. Use at least 6 characters.')
+      } else if (error.code === 'auth/expired-action-code') {
+        toastError('✗ Reset link expired. Please request a new one.')
+      } else if (error.code === 'auth/invalid-action-code') {
+        toastError('✗ Invalid reset link. Please request a new one.')
+      } else {
+        toastError(`✗ Password reset failed: ${error.message}`)
+      }
+      throw error
+    }
   }, [])
 
-  const updateUser = useCallback((uid, updates) => updateUserRecord(uid, updates), [])
+  const updateUser = useCallback(async (uid, updates) => {
+    try {
+      await updateUserRecord(uid, updates)
+      toastSuccess('✓ Profile updated successfully')
+    } catch (error) {
+      toastError(`✗ Update failed: ${error.message}`)
+      throw error
+    }
+  }, [])
 
   return useMemo(
     () => ({

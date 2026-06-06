@@ -10,6 +10,7 @@ export function canAccessDashboard(currentUser, userProfile) {
 
   if (!currentUser.emailVerified && !adminVerifiedInApp) return false
   if (userProfile.status !== STATUSES.APPROVED) return false
+  if (userProfile.role === ROLES.PLAYER && !['TEAM_ASSIGNED', 'ACTIVE'].includes(userProfile.membershipStatus)) return false
 
   return true
 }

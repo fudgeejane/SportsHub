@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { emptyTeamStructure, isValidTeamStructure, normalizeTeamStructure, REGISTRATION_TYPES } from '../../constants/teamStructure'
+import { emptyTeamStructure, isValidTeamStructure, normalizeTeamStructure } from '../../constants/teamStructure'
 
 function inputClass() {
   return 'min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
@@ -56,37 +56,6 @@ export default function TeamStructureModal({ sport, onClose, onSave, saving = fa
               </label>
             ))}
           </div>
-
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Registration type
-            <select
-              className={inputClass()}
-              value={form.registrationType}
-              onChange={(event) => setForm({ ...form, registrationType: event.target.value })}
-            >
-              <option value={REGISTRATION_TYPES.PLAYER_REQUEST}>Player requests coach approval</option>
-              <option value={REGISTRATION_TYPES.ORGANIZER_ASSIGN}>Organizer assigns teams</option>
-              <option value={REGISTRATION_TYPES.OPEN}>Open registration</option>
-            </select>
-          </label>
-
-          <label className="grid gap-1 text-sm font-bold text-slate-700">
-            Composition roles (comma-separated)
-            <input
-              className={inputClass()}
-              value={form.roles.join(', ')}
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  roles: event.target.value
-                    .split(',')
-                    .map((role) => role.trim())
-                    .filter(Boolean),
-                })
-              }
-              placeholder="PLAYER, COACH"
-            />
-          </label>
 
           <label className="grid gap-1 text-sm font-bold text-slate-700">
             Rules / notes

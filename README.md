@@ -72,3 +72,37 @@ npm run preview
 - The admin setup page creates a Community Organizer account with approved access.
 - The app uses Firestore security rules to protect user documents and allow only approved organizers/admins to manage user roles.
 - If the app reports `ERR_BLOCKED_BY_CLIENT` for Firestore connection, disable browser extensions or privacy blockers.
+
+## Troubleshooting
+
+### ERR_BLOCKED_BY_CLIENT Error
+
+If you see `ERR_BLOCKED_BY_CLIENT` errors when signing up or signing in, this means your browser is blocking connections to Firebase/Firestore. Try these solutions:
+
+1. **Disable browser extensions** that block ads or trackers:
+   - uBlock Origin
+   - AdBlock/AdBlock Plus
+   - Privacy Badger
+   - Ghostery
+   - Any other ad/tracker blockers
+
+2. **Disable browser privacy features**:
+   - **Brave Browser**: Turn off "Shields" for localhost
+   - **Firefox**: Disable Enhanced Tracking Protection for localhost
+   - **Chrome**: Check if any security extensions are active
+
+3. **Check firewall/antivirus**:
+   - Some antivirus software blocks Firebase connections
+   - Temporarily disable to test
+
+4. **Try a different browser**:
+   - Chrome (without extensions)
+   - Edge
+   - Firefox (with tracking protection disabled)
+
+5. **Whitelist Firebase domains**:
+   Add these to your ad blocker's whitelist:
+   - `*.firebaseapp.com`
+   - `*.googleapis.com`
+   - `*.google.com`
+   - `firestore.googleapis.com`

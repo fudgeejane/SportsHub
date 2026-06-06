@@ -3,11 +3,13 @@ import SportFormModal from '../../components/organizer/SportFormModal'
 import TeamStructureModal from '../../components/organizer/TeamStructureModal'
 import { isValidTeamStructure } from '../../constants/teamStructure'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { MoreVertical, PlusCircle } from 'lucide-react'
 
 export default function OrganizerSportsPage() {
   const system = useSportsSystem()
   const [sportModal, setSportModal] = useState(null)
   const [structureSport, setStructureSport] = useState(null)
+  const [openMenuId, setOpenMenuId] = useState(null)
   const [saving, setSaving] = useState(false)
 
   const saveSport = async (payload) => {
@@ -35,27 +37,31 @@ export default function OrganizerSportsPage() {
     }
   }
 
+  const runMenuAction = (action) => {
+    setOpenMenuId(null)
+    action()
+  }
+
   return (
     <section className="grid gap-4">
-      {system.error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600">{system.error}</p> : null}
-      {system.loading ? <p className="rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-bold text-cyan-700">Loading sports...</p> : null}
-
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/5">
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-xl font-black text-slate-950">Sports Management</h2>
+            <h2 className="text-2xl font-bold text-slate-950">Sports Management</h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">Create sports and configure team structure on each sport document.</p>
           </div>
           <button
             type="button"
             onClick={() => setSportModal({})}
-            className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white hover:bg-blue-700"
+            className="rounded-lg inline-flex items-center gap-2 bg-green-500 cursor-pointer hover:bg-green-600 px-4 py-2 !text-sm font-black text-white hover:bg-blue-700"
           >
+            <PlusCircle className='h-4 w-4' />
             Add sport
           </button>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <section className="">
+        
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {system.sports.length ? (
             system.sports.map((sport) => {
               const structure = sport.teamStructure
@@ -68,7 +74,41 @@ export default function OrganizerSportsPage() {
                       <h3 className="font-black text-slate-950">{sport.name}</h3>
                       <p className="mt-1 text-sm leading-6 text-slate-600">{sport.description || 'No description added.'}</p>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">{sport.status}</span>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setOpenMenuId((current) => (current === sport.id ? null : sport.id))}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+                        aria-label={`Open actions for ${sport.name}`}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                      {openMenuId === sport.id ? (
+                        <div className="absolute right-0 top-10 z-20 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-xl shadow-slate-900/10">
+                          <button
+                            type="button"
+                            className="block w-full px-4 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            onClick={() => runMenuAction(() => setSportModal(sport))}
+                          >
+                            Edit sport
+                          </button>
+                          <button
+                            type="button"
+                            className="block w-full px-4 py-2 text-left text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                            onClick={() => runMenuAction(() => setStructureSport(sport))}
+                          >
+                            Team structure
+                          </button>
+                          <button
+                            type="button"
+                            className="block w-full px-4 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
+                            onClick={() => runMenuAction(() => system.archiveSport(sport.id))}
+                          >
+                            Archive
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
 
                   <p className="mt-3 text-xs font-semibold text-slate-500">
@@ -77,17 +117,6 @@ export default function OrganizerSportsPage() {
                       : 'Team structure not configured'}
                   </p>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <button type="button" className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold" onClick={() => setSportModal(sport)}>
-                      Edit sport
-                    </button>
-                    <button type="button" className="rounded-xl border border-blue-200 px-3 py-2 text-sm font-bold text-blue-700" onClick={() => setStructureSport(sport)}>
-                      Team structure
-                    </button>
-                    <button type="button" className="rounded-xl border border-red-200 px-3 py-2 text-sm font-bold text-red-600" onClick={() => system.archiveSport(sport.id)}>
-                      Archive
-                    </button>
-                  </div>
                 </article>
               )
             })

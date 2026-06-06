@@ -4,8 +4,6 @@ import {
   Home,
   ListChecks,
   Medal,
-  Settings,
-  ShieldCheck,
   UserCog,
   Users,
   UserRound,
@@ -41,12 +39,14 @@ export const navConfig = {
   player: [
     { label: 'Dashboard', path: '/player/dashboard', icon: Home },
     { label: 'Browse Teams', path: '/player/teams', icon: Users },
+    { label: 'Payment', path: '/player/payment', icon: ListChecks },
     { label: 'My Requests', path: '/player/requests', icon: ListChecks },
     { label: 'Profile', path: '/player/profile', icon: UserRound },
   ],
   coach: [
     { label: 'Dashboard', path: '/coach/dashboard', icon: Home },
     { label: 'My Teams', path: '/coach/teams', icon: Users },
+    { label: 'Event Registrations', path: '/coach/event-registrations', icon: CalendarDays },
     { label: 'Join Requests', path: '/coach/requests', icon: ListChecks },
   ],
   organizer: [
@@ -59,23 +59,18 @@ export const navConfig = {
   ],
   facilitator: [
     { label: 'Dashboard', path: '/facilitator/dashboard', icon: Home },
-    { label: 'Sports', path: '/facilitator/sports', icon: Medal },
+    { label: 'Payments', path: '/facilitator/payments', icon: ListChecks },
     { label: 'Events', path: '/facilitator/events', icon: CalendarDays },
     { label: 'Teams', path: '/facilitator/teams', icon: Users },
     { label: 'Scheduling', path: '/facilitator/schedule', icon: CalendarDays },
   ],
   admin: [
     { label: 'Dashboard', path: '/organizer/dashboard', icon: Home },
-    { label: 'Users & Roles', path: '/organizer/users', icon: UserCog },
-    { label: 'Facilitator Accounts', path: '/organizer/facilitators', icon: ShieldCheck },
-    { label: 'Sports', path: '/organizer/sports', icon: Medal },
-    { label: 'Events', path: '/organizer/events', icon: CalendarDays },
+    { label: 'Users Management', path: '/organizer/users', icon: UserCog },
+    { label: 'Sport Management', path: '/organizer/sports', icon: Medal },
+    { label: 'Event Management', path: '/organizer/events', icon: CalendarDays },
     { label: 'Teams & Rosters', path: '/organizer/teams', icon: Users },
-    { label: 'Registrations', path: '/organizer/requests', icon: ListChecks },
-    { label: 'Analytics', path: '/organizer/analytics', icon: BarChart3 },
-    { label: 'Scheduling', path: '/organizer/schedule', icon: CalendarDays },
-    { label: 'Settings', path: '/organizer/settings', icon: Settings },
-  ],
+   ],
 }
 
 export function getRoleKey(role) {

@@ -94,6 +94,7 @@ export default function LandingPage({ authModal }) {
   const location = useLocation()
   const heroSectionRef = useRef(null)
   const signupSuccess = location.state?.signupSuccess
+  const playerJoinPending = location.state?.playerJoinPending
 
   useEmailVerificationHandler()
 
@@ -185,11 +186,7 @@ export default function LandingPage({ authModal }) {
 
   return (
     <div className="landing-page min-h-screen overflow-x-hidden bg-[#f7f9fc] text-slate-700">
-      {signupSuccess ? (
-        <div className="fixed inset-x-0 top-[var(--header-height)] z-40 border-b border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-semibold text-emerald-800 sm:px-6">
-          Check your inbox and verify your SportsHub account before accessing your dashboard.
-        </div>
-      ) : null}
+   
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/70 bg-white/90 shadow-sm shadow-slate-900/5 backdrop-blur-xl">
         <nav className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap lg:px-8">
           <Logo onHome={navigateHome} />

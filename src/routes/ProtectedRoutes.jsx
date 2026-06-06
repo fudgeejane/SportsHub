@@ -4,12 +4,14 @@ import AppLayout from '../components/layout/AppLayout'
 import { ROLES, STATUSES } from '../contexts/AuthContext'
 import { useAuth } from '../hooks/useAuth.jsx'
 import CoachDashboard from '../pages/Coach/Dashboard'
+import CoachEventRegistrationsPage from '../pages/Coach/EventRegistrations'
 import CoachRequestsPage from '../pages/Coach/Requests'
 import CoachTeamsPage from '../pages/Coach/Teams'
 import FacilitatorDashboard from '../pages/Facilitator/Dashboard'
 import FacilitatorEventsPage from '../pages/Facilitator/Events'
 import FacilitatorSchedulePage from '../pages/Facilitator/Schedule'
 import FacilitatorSportsPage from '../pages/Facilitator/Sports'
+import FacilitatorRequestsPage from '../pages/Facilitator/Requests'
 import FacilitatorTeamsPage from '../pages/Facilitator/Teams'
 import OrganizerAnalyticsPage from '../pages/Organizer/Analytics'
 import OrganizerDashboard from '../pages/Organizer/Dashboard'
@@ -22,6 +24,7 @@ import OrganizerSportsPage from '../pages/Organizer/Sports'
 import OrganizerTeamsPage from '../pages/Organizer/Teams'
 import OrganizerUsersPage from '../pages/Organizer/Users'
 import PlayerDashboard from '../pages/Player/Dashboard'
+import PlayerPaymentPage from '../pages/Player/Payment'
 import PlayerProfilePage from '../pages/Player/Profile'
 import PlayerRequestsPage from '../pages/Player/Requests'
 import PlayerTeamsPage from '../pages/Player/Teams'
@@ -56,15 +59,11 @@ function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to={PUBLIC_ROUTES.verifyEmail} replace />
   }
 
-  if (userProfile?.status === STATUSES.PENDING) {
+  if (userProfile?.status !== STATUSES.APPROVED) {
     return <Navigate to={PUBLIC_ROUTES.approvalPending} replace />
   }
 
-  if (userProfile?.status === STATUSES.REJECTED) {
-    return <Navigate to={PUBLIC_ROUTES.accessDenied} replace />
-  }
-
-  if (userProfile?.status !== STATUSES.APPROVED) {
+  if (userProfile?.role === ROLES.PLAYER && !['TEAM_ASSIGNED', 'ACTIVE'].includes(userProfile?.membershipStatus)) {
     return <Navigate to={PUBLIC_ROUTES.approvalPending} replace />
   }
 
@@ -202,10 +201,42 @@ export const protectedRoutes = [
       }
     />
     <Route
+      path="/coach/event-registrations"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.COACH]}>
+          <CoachEventRegistrationsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
       path="/coach/requests"
       element={
         <ProtectedRoute allowedRoles={[ROLES.COACH]}>
           <CoachRequestsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/facilitator/payments"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
+          <FacilitatorRequestsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/facilitator/requests"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
+          <FacilitatorRequestsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/player/payment"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
+          <PlayerPaymentPage />
         </ProtectedRoute>
       }
     />
