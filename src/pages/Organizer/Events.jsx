@@ -4,8 +4,9 @@ import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
 import { useEvents } from '../../hooks/useEvents'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
 import { CirclePlus } from 'lucide-react'
+import { formatDate } from '../../utils/dateFormat'
 
-const emptyEvent = { name: '', sportId: '', venue: '', startDate: '', endDate: '', feePerTeam: '', facilitatorId: '', status: 'OPEN' }
+const emptyEvent = { name: '', sportId: '', startDate: '', endDate: '', feePerTeam: '', facilitatorId: '', status: 'OPEN' }
 
 function inputClass() {
   return 'min-h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
@@ -16,9 +17,9 @@ function pickName(items, id) {
 }
 
 function formatSchedule(item) {
-  const start = item.startDate || 'TBA'
-  const end = item.endDate || 'TBA'
-  if (start === end) return start
+  const start = formatDate(item.startDate) || 'TBA'
+  const end = formatDate(item.endDate) || 'TBA'
+  if (start === end || !item.endDate) return start
   return `${start} — ${end}`
 }
 
@@ -72,7 +73,6 @@ export default function OrganizerEventsPage() {
             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
               <th className="px-6 py-4 text-left font-semibold">Event</th>
               <th className="px-6 py-4 text-left font-semibold">Sport</th>
-              <th className="px-6 py-4 text-left font-semibold">Venue</th>
               <th className="px-6 py-4 text-left font-semibold">Fee</th>
               <th className="px-6 py-4 text-left font-semibold">Facilitator</th>
               <th className="px-6 py-4 text-left font-semibold">Schedule</th>
@@ -97,9 +97,6 @@ export default function OrganizerEventsPage() {
                   {item.sportName}
                 </td>
 
-                <td className="px-6 py-4 text-slate-600">
-                  {item.venue || "TBA"}
-                </td>
                 <td className="px-6 py-4 text-slate-600">
                   PHP {item.feePerTeam || 0}
                 </td>
@@ -182,11 +179,6 @@ export default function OrganizerEventsPage() {
                       </option>
                     ))}
                 </select>
-              </label>
-
-              <label className="grid gap-1 text-sm font-bold text-slate-700">
-                Venue
-                <input className={inputClass()} value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} placeholder="City Basketball Court" />
               </label>
 
               <label className="grid gap-1 text-sm font-bold text-slate-700">

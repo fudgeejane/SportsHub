@@ -1,13 +1,7 @@
 import { useMemo } from 'react'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
-
-function formatDate(value) {
-  if (!value) return 'No date set'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
+import { formatDate } from '../../utils/dateFormat'
 
 function isIncoming(value) {
   if (!value) return false
@@ -86,13 +80,18 @@ export default function PlayerDashboard() {
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/5">
           <h3 className="text-xl font-black text-slate-950">Current Team</h3>
           <div className="mt-4 grid gap-3">
-            {activeMemberships.map((membership) => (
-              <article key={membership.id} className="rounded-2xl bg-slate-50 px-4 py-3">
-                <p className="font-black text-slate-950">{membership.teamName}</p>
-                <p className="mt-1 text-sm font-semibold text-slate-700">{membership.sportName}</p>
-                <p className="mt-1 text-sm text-slate-600">Coach: {membership.coachName || membership.coachId || 'Coach'}</p>
-              </article>
-            ))}
+            {activeMemberships.map((membership) => {
+              const team = system.teams.find(t => t.id === membership.teamId)
+              const coachName = team?.coachName || membership.coachName || 'Not assigned'
+              
+              return (
+                <article key={membership.id} className="rounded-2xl bg-slate-50 px-4 py-3">
+                  <p className="font-black text-slate-950">{membership.teamName}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-700">{membership.sportName}</p>
+                  <p className="mt-1 text-sm text-slate-600">Coach: {coachName}</p>
+                </article>
+              )
+            })}
             {!activeMemberships.length ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No approved team membership yet.</p> : null}
           </div>
         </div>
@@ -104,7 +103,7 @@ export default function PlayerDashboard() {
               <article key={event.id} className="rounded-2xl bg-slate-50 px-4 py-3">
                 <p className="font-bold text-slate-950">{event.name}</p>
                 <p className="text-sm text-slate-600">{event.sportName} at {event.venue || 'No venue set'}</p>
-                <p className="mt-1 text-sm font-bold text-blue-700">{formatDate(event.startDate)}</p>
+                <p className="mt-1 text-sm font-bold text-blue-700">{formatDate(event.startDate) || 'No date set'}</p>
               </article>
             ))}
             {!incomingEvents.length ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No incoming events for your current team sports.</p> : null}

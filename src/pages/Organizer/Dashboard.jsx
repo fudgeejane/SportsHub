@@ -3,13 +3,7 @@ import { ROLES } from '../../contexts/AuthContext'
 import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
 import { usePayment } from '../../hooks/usePayment'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
-
-function formatDate(value) {
-  if (!value) return 'No date set'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
+import { formatDate } from '../../utils/dateFormat'
 
 function isWithinNextSevenDays(value) {
   if (!value) return false
@@ -59,16 +53,11 @@ export default function OrganizerDashboard() {
         <p className="rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-bold text-cyan-700">Loading organizer dashboard...</p>
       ) : null}
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
-        <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-600">Organizer</p>
-        <h2 className="mt-2 text-3xl font-black text-slate-950">Dashboard</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600">Overview of players, facilitators, events, and registrations.</p>
-      </section>
+    
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
           ['Players', recentPlayers.length],
-          ['Active Sports', system.sports.filter((sport) => sport.status !== 'ARCHIVED').length],
           ['Incoming Events', incomingEvents.length],
           ['Pending Approvals', pendingUsers],
           ['Approved Payments', approvedPayments],
@@ -117,7 +106,7 @@ export default function OrganizerDashboard() {
             <article key={event.id} className="rounded-2xl border border-slate-200 p-4">
               <p className="font-black text-slate-950">{event.name}</p>
               <p className="mt-1 text-sm text-slate-600">{event.sportName} at {event.venue || 'No venue set'}</p>
-              <p className="mt-2 text-sm font-bold text-blue-700">{formatDate(event.startDate)}</p>
+              <p className="mt-2 text-sm font-bold text-blue-700">{formatDate(event.startDate) || 'No date set'}</p>
               <p className="mt-1 text-sm text-slate-600">Facilitator: {event.facilitatorName || 'Unassigned'}</p>
             </article>
           ))}

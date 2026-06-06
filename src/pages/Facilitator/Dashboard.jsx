@@ -2,13 +2,7 @@ import { useMemo } from 'react'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { usePayment } from '../../hooks/usePayment'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
-
-function formatDate(value) {
-  if (!value) return 'No date set'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
+import { formatDate } from '../../utils/dateFormat'
 
 function isIncoming(value) {
   if (!value) return false
@@ -44,25 +38,13 @@ export default function FacilitatorDashboard() {
 
   return (
     <section className="grid gap-5">
-      {system.error || paymentState.error ? (
-        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600">{system.error || paymentState.error}</p>
-      ) : null}
-      {system.loading || paymentState.loading ? (
-        <p className="rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-bold text-cyan-700">Loading facilitator dashboard...</p>
-      ) : null}
-
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
-        <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-600">Facilitator</p>
-        <h2 className="mt-2 text-3xl font-black text-slate-950">Dashboard</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600">Review assigned events, incoming dates, payments, and schedule status.</p>
-      </section>
+    
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
           ['Assigned Events', assignedEvents.length],
           ['Incoming Events', incomingEvents.length],
           ['Pending Payments', pendingPayments],
-          ['Approved Payments', approvedPayments],
           ['Scheduled Events', scheduledEvents],
         ].map(([label, value]) => (
           <article key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-lg shadow-slate-900/5">
@@ -80,7 +62,7 @@ export default function FacilitatorDashboard() {
               <article key={event.id} className="rounded-2xl bg-slate-50 px-4 py-3">
                 <p className="font-bold text-slate-950">{event.name}</p>
                 <p className="text-sm text-slate-600">{event.sportName} at {event.venue || 'No venue set'}</p>
-                <p className="mt-1 text-sm font-bold text-blue-700">{formatDate(event.startDate)}</p>
+                <p className="mt-1 text-sm font-bold text-blue-700">{formatDate(event.startDate) || 'No date set'}</p>
               </article>
             ))}
             {!incomingEvents.length ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No incoming assigned events.</p> : null}

@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth.jsx'
 import CoachDashboard from '../pages/Coach/Dashboard'
 import CoachEventRegistrationsPage from '../pages/Coach/EventRegistrations'
 import CoachRequestsPage from '../pages/Coach/Requests'
+import CoachSchedulesPage from '../pages/Coach/Schedules'
 import CoachTeamsPage from '../pages/Coach/Teams'
 import FacilitatorDashboard from '../pages/Facilitator/Dashboard'
 import FacilitatorEventsPage from '../pages/Facilitator/Events'
@@ -19,6 +20,7 @@ import OrganizerEventsPage from '../pages/Organizer/Events'
 import OrganizerFacilitatorsPage from '../pages/Organizer/Facilitators'
 import OrganizerRequestsPage from '../pages/Organizer/Requests'
 import OrganizerSchedulePage from '../pages/Organizer/Schedule'
+import OrganizerSchedulesPage from '../pages/Organizer/Schedules'
 import OrganizerSettingsPage from '../pages/Organizer/Settings'
 import OrganizerSportsPage from '../pages/Organizer/Sports'
 import OrganizerTeamsPage from '../pages/Organizer/Teams'
@@ -211,7 +213,12 @@ export const protectedRoutes = [
       }
     />
     <Route path="/event-registrations" element={<RoleRoute views={roleView({ [ROLES.COACH]: CoachEventRegistrationsPage })} />} />
-    <Route path="/schedules" element={<RoleRoute views={roleView({ [ROLES.PLAYER]: PlayerSchedulesPage })} />} />
+    <Route path="/schedules" element={<RoleRoute views={roleView({ 
+      [ROLES.PLAYER]: PlayerSchedulesPage, 
+      [ROLES.COACH]: CoachSchedulesPage,
+      [ROLES.ADMIN]: OrganizerSchedulesPage,
+      [ROLES.COMMUNITY_ORGANIZER]: OrganizerSchedulesPage
+    })} />} />
     <Route path="/profile" element={<RoleRoute views={roleView({ [ROLES.PLAYER]: PlayerProfilePage })} />} />
   </Route>,
 ]

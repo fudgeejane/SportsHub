@@ -1,3 +1,4 @@
+import { Check, X } from 'lucide-react'
 import { useRegistration } from '../../hooks/useRegistration'
 
 const formatLabel = (value) =>
@@ -24,42 +25,85 @@ export default function CoachRequestsPage() {
           <p className="mt-1 text-sm text-slate-600">Approve or reject players who applied to your teams.</p>
         </div>
 
-        <div className="grid gap-3">
-          {pendingApplications.map((application) => (
-            <div key={application.id} className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="font-semibold text-slate-950">{application.playerName}</p>
-                <p className="text-xs text-slate-600">{application.playerEmail}</p>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-lg bg-blue-100 px-2 py-1 font-semibold text-blue-700">{application.sportName}</span>
-                  <span className="rounded-lg bg-slate-100 px-2 py-1 font-semibold text-slate-700">{application.teamName}</span>
-                  <span className="rounded-lg bg-purple-100 px-2 py-1 font-semibold text-purple-700">{formatLabel(application.skillLevel)}</span>
-                </div>
-                {application.message ? <p className="mt-2 text-sm text-slate-600">{application.message}</p> : null}
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => registration.rejectJoinRequest(application)}
-                  className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-                >
-                  Reject
-                </button>
-                <button
-                  type="button"
-                  onClick={() => registration.acceptJoinRequest(application)}
-                  className="rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-green-700"
-                >
-                  Approve
-                </button>
-              </div>
-            </div>
-          ))}
-          {!pendingApplications.length && !registration.loading ? (
-            <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No pending player applications.</p>
-          ) : null}
-        </div>
+        {pendingApplications.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Player</th>
+                  <th className="px-4 py-3">Sport</th>
+                  <th className="px-4 py-3">Team</th>
+                  <th className="px-4 py-3">Skill Level</th>
+                  <th className="px-4 py-3">Message</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {pendingApplications.map((application) => (
+                  <tr key={application.id} className="transition hover:bg-slate-50">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-sm font-black text-white">
+                          {application.playerName?.charAt(0).toUpperCase() || 'P'}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-950">{application.playerName}</p>
+                          <p className="text-xs text-slate-500">{application.playerEmail}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+                        {application.sportName}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="font-semibold text-slate-700">{application.teamName}</span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="inline-flex rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-700">
+                        {formatLabel(application.skillLevel)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      {application.message ? (
+                        <p className="max-w-xs truncate text-slate-600" title={application.message}>
+                          {application.message}
+                        </p>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => registration.rejectJoinRequest(application)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-50"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                          Reject
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => registration.acceptJoinRequest(application)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-green-700"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                          Approve
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : !registration.loading ? (
+          <div className="rounded-2xl bg-slate-50 px-4 py-8 text-center">
+            <p className="text-sm font-semibold text-slate-500">No pending player applications.</p>
+          </div>
+        ) : null}
       </section>
     </section>
   )

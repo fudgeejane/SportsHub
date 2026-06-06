@@ -83,11 +83,10 @@ export default function CoachEventRegistrationsPage() {
 
   return (
     <section className="grid gap-4">
-      {system.error || payment.error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600">{system.error || payment.error}</p> : null}
-      {system.loading || payment.loading ? <p className="rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-bold text-cyan-700">Loading latest records...</p> : null}
 
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/5">
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+
+      <section>
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-xl font-black text-slate-950">Event Registrations</h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">Register existing teams into organizer-created events and submit payment proof.</p>
@@ -95,24 +94,23 @@ export default function CoachEventRegistrationsPage() {
           <button
             type="button"
             onClick={openCreateModal}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-black text-white transition hover:bg-blue-700"
+            className="inline-flex items-center gap-2 rounded-lg cursor-pointer bg-green-500 hover:bg-green-600 px-4 py-2 !text-sm font-black text-white transition hover:bg-blue-700"
           >
             <CalendarPlus className="h-4 w-4" />
             Register team
           </button>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {registrations.map((registration) => (
-            <article key={registration.id} className="rounded-2xl border border-slate-200 p-4">
+            <article key={registration.id} className="rounded-2xl border bg-white border-slate-200 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="font-black text-slate-950">{registration.teamName}</h3>
                   <p className="mt-1 text-sm text-slate-600">{registration.eventName}</p>
                   <p className="mt-1 text-sm font-semibold text-slate-700">Sport: {registration.sportName}</p>
                   <p className="mt-1 text-sm font-semibold text-slate-700">Registration: {registration.status || 'PENDING'}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-700">Payment: {registration.paymentStatus || 'pending'}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-700">Fee: PHP {registration.amount || 0}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-700 capitalize">Payment: {registration.paymentStatus || 'pending'} (PHP {registration.amount || 0})</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -182,16 +180,6 @@ export default function CoachEventRegistrationsPage() {
                 </select>
               </label>
 
-              <label className="grid gap-1 text-sm font-bold text-slate-700">
-                Status
-                <select required className={inputClass()} value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
-                  {registrationStatuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </label>
 
               <label className="grid gap-1 text-sm font-bold text-slate-700">
                 Payment method

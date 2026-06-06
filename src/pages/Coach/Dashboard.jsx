@@ -3,13 +3,7 @@ import { useAuth } from '../../hooks/useAuth.jsx'
 import { usePayment } from '../../hooks/usePayment'
 import { useRegistration } from '../../hooks/useRegistration'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
-
-function formatDate(value) {
-  if (!value) return 'No date set'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
+import { formatDate, formatTime } from '../../utils/dateFormat'
 
 function eventIsIncoming(value) {
   if (!value) return false
@@ -80,18 +74,6 @@ export default function CoachDashboard() {
 
   return (
     <section className="grid gap-5">
-      {system.error || registration.error || payments.error ? (
-        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600">{system.error || registration.error || payments.error}</p>
-      ) : null}
-      {system.loading || registration.loading || payments.loading ? (
-        <p className="rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-bold text-cyan-700">Loading coach dashboard...</p>
-      ) : null}
-
-      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
-        <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-600">Coach</p>
-        <h2 className="mt-2 text-3xl font-black text-slate-950">Dashboard</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600">Track team activity, approvals, incoming events, and schedules.</p>
-      </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
@@ -115,7 +97,7 @@ export default function CoachDashboard() {
               <article key={event.id} className="rounded-2xl bg-slate-50 px-4 py-3">
                 <p className="font-bold text-slate-950">{event.name}</p>
                 <p className="text-sm text-slate-600">{event.sportName} at {event.venue || 'No venue set'}</p>
-                <p className="mt-1 text-sm font-bold text-blue-700">{formatDate(event.startDate)}</p>
+                <p className="mt-1 text-sm font-bold text-blue-700">{formatDate(event.startDate) || 'No date set'}</p>
               </article>
             ))}
             {!incomingEvents.length ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No incoming events found.</p> : null}
@@ -145,7 +127,7 @@ export default function CoachDashboard() {
             <article key={`${match.eventId}-${match.gameNumber || match.id || match.teamAName}`} className="rounded-2xl border border-slate-200 p-4">
               <p className="font-black text-slate-950">{match.eventName}</p>
               <p className="mt-1 text-sm text-slate-600">{match.teamAName || match.teamName || 'Team'} vs {match.teamBName || 'TBD'}</p>
-              <p className="mt-2 text-sm font-bold text-blue-700">{formatDate(match.eventDate)} {match.time ? `| ${match.time}` : ''}</p>
+              <p className="mt-2 text-sm font-bold text-blue-700">{formatDate(match.eventDate) || 'No date set'} {match.time ? `| ${formatTime(match.time)}` : ''}</p>
               <p className="mt-1 text-sm text-slate-600">{match.venue || 'No venue set'}</p>
             </article>
           ))}

@@ -4,20 +4,20 @@ import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import ScheduleBracket from '../../components/schedule/ScheduleBracket'
 
-function matchHasTeam(match, teamIds) {
+function teamAppearsInMatch(match, teamIds) {
   return teamIds.has(match.teamAId) || teamIds.has(match.teamBId) || teamIds.has(match.teamId)
 }
 
-export default function PlayerSchedulesPage() {
+export default function CoachSchedulesPage() {
   const { currentUser } = useAuth()
   const system = useSportsSystem()
   const [selectedEventId, setSelectedEventId] = useState('')
 
-  const activeMemberships = useMemo(
-    () => system.members.filter((member) => member.playerId === currentUser?.uid && member.status === 'ACTIVE'),
-    [currentUser?.uid, system.members],
+  const coachTeams = useMemo(
+    () => system.teams.filter((team) => team.coachId === currentUser?.uid && team.status !== 'ARCHIVED'),
+    [currentUser?.uid, system.teams],
   )
-  const teamIds = useMemo(() => new Set(activeMemberships.map((member) => member.teamId)), [activeMemberships])
+  const coachTeamIds = useMemo(() => new Set(coachTeams.map((team) => team.id)), [coachTeams])
 
   const myEvents = useMemo(
     () => system.events.filter(event => 
@@ -31,12 +31,12 @@ export default function PlayerSchedulesPage() {
     [myEvents, selectedEventId]
   )
 
-  const schedules = useMemo(
+  const scheduledMatches = useMemo(
     () =>
       system.events
         .flatMap((event) =>
           (event.schedule || [])
-            .filter((match) => matchHasTeam(match, teamIds))
+            .filter((match) => teamAppearsInMatch(match, coachTeamIds))
             .map((match) => ({
               ...match,
               eventId: event.id,
@@ -51,7 +51,7 @@ export default function PlayerSchedulesPage() {
           if (dateSort !== 0) return dateSort
           return String(a.time || '').localeCompare(String(b.time || ''))
         }),
-    [system.events, teamIds],
+    [coachTeamIds, system.events],
   )
 
   return (
@@ -90,15 +90,14 @@ export default function PlayerSchedulesPage() {
                 {selectedEvent.endDate && selectedEvent.endDate !== selectedEvent.startDate ? ` to ${formatDate(selectedEvent.endDate)}` : ''}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {activeMemberships
-                  .filter(m => {
-                    const team = system.teams.find(t => t.id === m.teamId)
-                    return team && team.sportId === selectedEvent.sportId
+                {coachTeams
+                  .filter(team => {
+                    return team.sportId === selectedEvent.sportId
                   })
-                  .map(membership => (
-                    <div key={membership.id} className="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white">
+                  .map(team => (
+                    <div key={team.id} className="inline-flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white">
                       <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                      Your Team: {membership.teamName}
+                      Your Team: {team.name}
                     </div>
                   ))
                 }
@@ -107,30 +106,30 @@ export default function PlayerSchedulesPage() {
             <ScheduleBracket 
               bracket={selectedEvent.bracket} 
               event={selectedEvent}
-              highlightTeamIds={teamIds}
+              highlightTeamIds={coachTeamIds}
             />
           </div>
         )}
 
         <div className="mt-5 grid gap-3">
           <h3 className="text-lg font-black text-slate-950">All Matches</h3>
-          {schedules.map((slot) => (
-            <article key={`${slot.eventId}-${slot.gameNumber || slot.id || slot.time}`} className="rounded-2xl border border-slate-200 p-4">
+          {scheduledMatches.map((match) => (
+            <article key={`${match.eventId}-${match.gameNumber || match.id || match.time}`} className="rounded-2xl border border-slate-200 p-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <p className="font-black text-slate-950">{slot.eventName}</p>
-                  <p className="mt-1 text-sm text-slate-600">{slot.sportName} at {slot.venue || 'No venue set'}</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-700">{slot.teamAName || slot.teamName || 'Team'} vs {slot.teamBName || 'TBD'}</p>
+                  <p className="font-black text-slate-950">{match.eventName}</p>
+                  <p className="mt-1 text-sm text-slate-600">{match.sportName} at {match.venue || 'No venue set'}</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-700">{match.teamAName || match.teamName || 'Team'} vs {match.teamBName || 'TBD'}</p>
                 </div>
                 <div className="md:text-right">
-                  <p className="text-sm font-black text-blue-700">{formatDate(slot.eventDate) || 'No date set'}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-600">{formatTime(slot.time) || 'Time TBD'}</p>
-                  {slot.round ? <p className="mt-1 text-xs font-black uppercase text-slate-500">Round {slot.round}</p> : null}
+                  <p className="text-sm font-black text-blue-700">{formatDate(match.eventDate) || 'No date set'}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-600">{formatTime(match.time) || 'Time TBD'}</p>
+                  {match.round ? <p className="mt-1 text-xs font-black uppercase text-slate-500">Round {match.round}</p> : null}
                 </div>
               </div>
             </article>
           ))}
-          {!schedules.length ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No schedules found for your current team yet.</p> : null}
+          {!scheduledMatches.length ? <p className="rounded-2xl bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">No scheduled matches for your teams yet.</p> : null}
         </div>
       </section>
     </section>
