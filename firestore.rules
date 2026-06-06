@@ -141,6 +141,8 @@ service cloud.firestore {
         'signupStatus',
         'membershipStatus',
         'paymentStatus',
+        'assignedTeamId',
+        'assignedTeamName',
         'approvedBy',
         'approvedAt',
         'updatedAt',

@@ -136,6 +136,21 @@ export function useRegistration() {
         updatedAt: serverTimestamp(),
       })
 
+      const previousMemberships = members.filter(
+        (member) => member.playerId === request.playerId && member.status === 'ACTIVE' && member.coachId === currentUser.uid,
+      )
+
+      await Promise.all(
+        previousMemberships.map((member) =>
+          updateDoc(doc(db, TEAM_MEMBERS, member.id), {
+            status: 'TRANSFERRED',
+            transferredToTeamId: request.teamId,
+            transferredAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          }),
+        ),
+      )
+
       await addDoc(collection(db, TEAM_MEMBERS), {
         teamId: request.teamId,
         teamName: request.teamName,
@@ -158,6 +173,8 @@ export function useRegistration() {
         approvalStatus: STATUSES.APPROVED,
         signupStatus: SIGNUP_STATUS.APPROVED,
         membershipStatus: MEMBERSHIP_STATUS.ACTIVE,
+        assignedTeamId: request.teamId,
+        assignedTeamName: request.teamName,
         approvedBy: currentUser.uid,
         approvedAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -198,7 +215,7 @@ export function useRegistration() {
   )
 
   const createJoinRequest = useCallback(
-    async (team, message = '') => {
+    async (team, message = '', options = {}) => {
       const playerProfile = userProfile || {}
       const existing = await getDocs(
         query(
@@ -210,6 +227,8 @@ export function useRegistration() {
       )
 
       if (!existing.empty) throw new Error('You already have a pending request for this team.')
+
+      const isTransferRequest = Boolean(options.previousMembershipId || options.previousTeamId)
 
       await addDoc(collection(db, PLAYER_APPLICATIONS), {
         teamId: team.id,
@@ -224,6 +243,10 @@ export function useRegistration() {
         playerEmail: currentUser.email || '',
         skillLevel: playerProfile.skillLevel || '',
         message: message.trim(),
+        requestType: isTransferRequest ? 'TRANSFER' : 'JOIN',
+        previousMembershipId: options.previousMembershipId || '',
+        previousTeamId: options.previousTeamId || '',
+        previousTeamName: options.previousTeamName || '',
         status: JOIN_REQUEST_STATUS.PENDING,
         signupStatus: SIGNUP_STATUS.PENDING,
         createdAt: serverTimestamp(),
@@ -231,19 +254,21 @@ export function useRegistration() {
         reviewedBy: null,
       })
 
-      await updateDoc(doc(db, USERS, currentUser.uid), {
-        status: STATUSES.PENDING,
-        approvalStatus: STATUSES.PENDING,
-        requestedTeamId: team.id,
-        requestedTeamName: team.name,
-        preferredSport: team.sportName || '',
-        preferredSportId: team.sportId || '',
-        membershipStatus: MEMBERSHIP_STATUS.PENDING_COACH_APPROVAL,
-        signupStatus: SIGNUP_STATUS.PENDING,
-        updatedAt: serverTimestamp(),
-      })
+      if (!isTransferRequest) {
+        await updateDoc(doc(db, USERS, currentUser.uid), {
+          status: STATUSES.PENDING,
+          approvalStatus: STATUSES.PENDING,
+          requestedTeamId: team.id,
+          requestedTeamName: team.name,
+          preferredSport: team.sportName || '',
+          preferredSportId: team.sportId || '',
+          membershipStatus: MEMBERSHIP_STATUS.PENDING_COACH_APPROVAL,
+          signupStatus: SIGNUP_STATUS.PENDING,
+          updatedAt: serverTimestamp(),
+        })
+      }
 
-      toastSuccess('Join request sent.')
+      toastSuccess(isTransferRequest ? 'Transfer request sent.' : 'Join request sent.')
     },
     [currentUser, userProfile],
   )

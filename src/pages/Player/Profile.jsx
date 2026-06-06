@@ -48,7 +48,7 @@ export default function PlayerProfilePage() {
 
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/5">
         <div className="mb-5">
-          <h2 className="text-xl font-black text-slate-950">Player Profile</h2>
+          <h2 className="text-xl font-black text-slate-950">Settings</h2>
           <p className="mt-1 text-sm leading-6 text-slate-600">Keep your registration profile complete for team coaches and organizers.</p>
         </div>
 

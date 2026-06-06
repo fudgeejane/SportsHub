@@ -38,10 +38,9 @@ export const roleDashboardPaths = {
 export const navConfig = {
   player: [
     { label: 'Dashboard', path: '/dashboard', icon: Home },
-    { label: 'Browse Teams', path: '/teams', icon: Users },
-    { label: 'Payment', path: '/payments', icon: ListChecks },
-    { label: 'My Requests', path: '/requests', icon: ListChecks },
-    { label: 'Profile', path: '/profile', icon: UserRound },
+    { label: 'Teams', path: '/teams', icon: Users },
+    { label: 'Schedules', path: '/schedules', icon: CalendarDays },
+    { label: 'Settings', path: '/settings', icon: UserRound },
   ],
   coach: [
     { label: 'Dashboard', path: '/dashboard', icon: Home },

@@ -27,6 +27,7 @@ import PlayerDashboard from '../pages/Player/Dashboard'
 import PlayerPaymentPage from '../pages/Player/Payment'
 import PlayerProfilePage from '../pages/Player/Profile'
 import PlayerRequestsPage from '../pages/Player/Requests'
+import PlayerSchedulesPage from '../pages/Player/Schedules'
 import PlayerTeamsPage from '../pages/Player/Teams'
 import { getDashboardPath } from './navConfig'
 import { PUBLIC_ROUTES } from './public-routes'
@@ -174,7 +175,18 @@ export const protectedRoutes = [
     />
     <Route path="/analytics" element={<RoleRoute views={roleView({ [ROLES.ADMIN]: OrganizerAnalyticsPage, [ROLES.COMMUNITY_ORGANIZER]: OrganizerAnalyticsPage })} />} />
     <Route path="/facilitators" element={<RoleRoute views={roleView({ [ROLES.ADMIN]: OrganizerFacilitatorsPage, [ROLES.COMMUNITY_ORGANIZER]: OrganizerFacilitatorsPage })} />} />
-    <Route path="/settings" element={<RoleRoute views={roleView({ [ROLES.ADMIN]: OrganizerSettingsPage, [ROLES.COMMUNITY_ORGANIZER]: OrganizerSettingsPage })} />} />
+    <Route
+      path="/settings"
+      element={
+        <RoleRoute
+          views={roleView({
+            [ROLES.ADMIN]: OrganizerSettingsPage,
+            [ROLES.COMMUNITY_ORGANIZER]: OrganizerSettingsPage,
+            [ROLES.PLAYER]: PlayerProfilePage,
+          })}
+        />
+      }
+    />
     <Route
       path="/schedule"
       element={
@@ -199,6 +211,7 @@ export const protectedRoutes = [
       }
     />
     <Route path="/event-registrations" element={<RoleRoute views={roleView({ [ROLES.COACH]: CoachEventRegistrationsPage })} />} />
+    <Route path="/schedules" element={<RoleRoute views={roleView({ [ROLES.PLAYER]: PlayerSchedulesPage })} />} />
     <Route path="/profile" element={<RoleRoute views={roleView({ [ROLES.PLAYER]: PlayerProfilePage })} />} />
   </Route>,
 ]
