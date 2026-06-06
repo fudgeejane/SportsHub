@@ -38,13 +38,11 @@ export default function SignInModal({ onClose }) {
     }
   }
 
-  const openSignUp = (event) => {
-    event.preventDefault()
+  const openSignUp = () => {
     navigate(PUBLIC_ROUTES.signUp, { replace: true, state: { restoreScrollY: window.scrollY } })
   }
 
-  const openForgotPassword = (event) => {
-    event.preventDefault()
+  const openForgotPassword = () => {
     navigate(PUBLIC_ROUTES.forgotPassword, { replace: true, state: { restoreScrollY: window.scrollY } })
   }
 
@@ -89,12 +87,12 @@ export default function SignInModal({ onClose }) {
       </form>
 
       <div className="mt-5 flex items-center justify-between gap-3 text-sm">
-        <a href={PUBLIC_ROUTES.forgotPassword} onClick={openForgotPassword} className="font-semibold text-blue-600 hover:text-blue-700">
+        <button type="button" onClick={openForgotPassword} className="font-semibold text-blue-600 hover:text-blue-700">
           Forgot password?
-        </a>
-        <a href={PUBLIC_ROUTES.signUp} onClick={openSignUp} className="font-semibold text-slate-700 hover:text-slate-950">
+        </button>
+        <button type="button" onClick={openSignUp} className="font-semibold text-slate-700 hover:text-slate-950">
           Need an account?
-        </a>
+        </button>
       </div>
     </AuthDialog>
   )

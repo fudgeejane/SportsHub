@@ -49,8 +49,7 @@ export default function SignUpModal({ onClose }) {
     }
   }
 
-  const openSignIn = (event) => {
-    event.preventDefault()
+  const openSignIn = () => {
     navigate(PUBLIC_ROUTES.signIn, { replace: true, state: { restoreScrollY: window.scrollY } })
   }
 
@@ -187,9 +186,9 @@ export default function SignUpModal({ onClose }) {
       </form>
 
       <div className="mt-5 flex justify-end text-sm">
-        <a href={PUBLIC_ROUTES.signIn} onClick={openSignIn} className="font-semibold text-slate-700 hover:text-slate-950">
+        <button type="button" onClick={openSignIn} className="font-semibold text-slate-700 hover:text-slate-950">
           Already have an account?
-        </a>
+        </button>
       </div>
     </AuthDialog>
   )

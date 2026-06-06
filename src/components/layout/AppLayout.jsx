@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, LogOut, Menu, X } from 'lucide-react'
 import defaultAvatar from '../../assets/default-avatar.svg'
 import { useAuth } from '../../hooks/useAuth.jsx'
@@ -60,7 +60,7 @@ function SidebarContent({ collapsed, onNavigate, onLogout }) {
   )
 }
 
-export default function AppLayout({ title, children }) {
+export default function AppLayout() {
   const { currentUser, signOut, userProfile } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -68,10 +68,7 @@ export default function AppLayout({ title, children }) {
   const [collapsed, setCollapsed] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const sidebarWidth = collapsed ? 'lg:pl-20' : 'lg:pl-72'
-  const pageTitle =
-    title ||
-    getAllowedNav(userProfile?.role).find((item) => item.path === location.pathname)?.label ||
-    'Dashboard'
+  const pageTitle = getAllowedNav(userProfile?.role).find((item) => item.path === location.pathname)?.label || 'Dashboard'
 
   const handleLogout = async () => {
     await signOut()
@@ -158,7 +155,9 @@ export default function AppLayout({ title, children }) {
         </header>
 
         <main className="h-[calc(100vh-4rem)] overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl">{children}</div>
+          <div className="mx-auto max-w-7xl">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

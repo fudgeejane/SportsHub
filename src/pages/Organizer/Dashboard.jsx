@@ -1,6 +1,5 @@
 import { ROLES } from '../../contexts/AuthContext'
 import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
-import DashboardShell from '../../components/common/DashboardShell'
 
 const roleOptions = [ROLES.ADMIN, ROLES.COMMUNITY_ORGANIZER, ROLES.COACH, ROLES.FACILITATOR, ROLES.PLAYER]
 
@@ -9,7 +8,14 @@ export default function OrganizerDashboard() {
   const { users, loading, error, approveUser, rejectUser, changeRole } = useUserManagement(currentUser?.uid)
 
   return (
-    <DashboardShell title="Organizer Dashboard" description="Approve users, reject users, and manage SportsHub roles.">
+    <section>
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
+        <p className="text-sm font-bold uppercase tracking-[0.18em] text-cyan-600">ORGANIZER</p>
+        <h2 className="mt-2 text-3xl font-bold text-slate-950">Organizer Dashboard</h2>
+        <p className="mt-2 text-slate-600">Approve users, reject users, and manage SportsHub roles.</p>
+      </div>
+
+      <div className="mt-6">
       {error ? <p className="mb-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</p> : null}
       {loading ? <p className="mb-4 rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-700">Loading users...</p> : null}
 
@@ -76,6 +82,7 @@ export default function OrganizerDashboard() {
           </table>
         </div>
       </div>
-    </DashboardShell>
+      </div>
+    </section>
   )
 }

@@ -79,12 +79,12 @@ const fadeUp = {
   transition: { duration: 0.55, ease: 'easeOut' },
 }
 
-function Logo() {
+function Logo({ onHome }) {
   return (
-    <a href={PUBLIC_ROUTES.home} className="flex items-center gap-3" aria-label="SportsHub home">
+    <button type="button" onClick={onHome} className="flex items-center gap-3" aria-label="SportsHub home">
         <img src={navLogo} alt="SportsHub logo" className="h-10 w-10" />
       <span className="text-lg font-bold text-slate-950">SportsHub</span>
-    </a>
+    </button>
   )
 }
 
@@ -110,8 +110,14 @@ export default function LandingPage({ authModal }) {
   }
 
   const openAuthModal = (event, route) => {
-    event.preventDefault()
     navigate(route, { state: { restoreScrollY: window.scrollY } })
+  }
+
+  const navigateHome = () => {
+    navigate(PUBLIC_ROUTES.home)
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    })
   }
 
   const closeAuthModal = () => {
@@ -168,7 +174,7 @@ export default function LandingPage({ authModal }) {
       `Name: ${inquiry.name}\nEmail: ${inquiry.email}\nRole: ${inquiry.role}\nInquiry type: ${inquiry.type}\n\nMessage:\n${inquiry.message}`,
     )
 
-    window.location.href = `mailto:organizers@sportshub.local?subject=${subject}&body=${body}`
+    window.open(`mailto:organizers@sportshub.local?subject=${subject}&body=${body}`, '_self')
   }
 
   // GSAP animations removed; layout handled via CSS and Framer Motion
@@ -177,34 +183,34 @@ export default function LandingPage({ authModal }) {
     <div className="min-h-screen overflow-x-hidden bg-[#f7f9fc] text-slate-700">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/70 bg-white/90 shadow-sm shadow-slate-900/5 backdrop-blur-xl">
         <nav className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap lg:px-8">
-          <Logo />
-          <div className="order-3 flex w-full items-center justify-center gap-4 overflow-x-auto text-nowrap border-t border-slate-100 pt-3 sm:gap-6 md:w-auto md:border-t-0 md:pt-0 lg:order-2 lg:gap-8" aria-label="Primary navigation">
+          <Logo onHome={navigateHome} />
+          <div className="order-3 flex w-full items-center text-sm justify-center gap-4 overflow-x-auto text-nowrap border-t border-slate-100 pt-3 sm:gap-6 md:w-auto md:border-t-0 md:pt-0 lg:order-2 lg:gap-8" aria-label="Primary navigation">
             {navLinks.map((link) => (
-              <a
+              <button
+                type="button"
                 key={link.label}
-                href={link.href}
                 onClick={(event) => handleSectionNav(event, link.href)}
                 className="text-sm font-medium text-slate-600 transition hover:text-slate-950"
               >
                 {link.label}
-              </a>
+              </button>
             ))}
           </div>
           <div className="order-2 flex items-center gap-2 lg:order-3 lg:gap-3">
-            <a
-              href={PUBLIC_ROUTES.signIn}
+            <button
+              type="button"
               onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signIn)}
-              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-blue-500 transition hover:bg-slate-100 sm:inline-flex"
+              className="hidden rounded-full px-4 py-2 !text-sm font-semibold text-blue-500 transition hover:bg-slate-100 sm:inline-flex"
             >
               Sign In
-            </a>
-            <a
-              href={PUBLIC_ROUTES.signUp}
+            </button>
+            <button
+              type="button"
               onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
-              className="inline-flex items-center gap-2 rounded-full bg-blue-500 hover:bg-blue-600 px-4 py-2 text-sm !text-white"
+              className="inline-flex items-center gap-2 rounded-full bg-blue-500 hover:bg-blue-600 px-4 py-2 !text-sm !text-white"
             >
               Join Now <ArrowRight size={16} />
-            </a>
+            </button>
           </div>
         </nav>
       </header>
@@ -240,21 +246,21 @@ export default function LandingPage({ authModal }) {
             </p>
 
             <div className="hero-animate mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a
-                href={PUBLIC_ROUTES.signUp}
+              <button
+                type="button"
                 onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
                 className="inline-flex items-center hover:-translate-y-0.5 gap-2 rounded-full bg-blue-500 hover:bg-blue-600 px-4 py-4 text-sm !text-white"
               >
                 Explore Platform <ArrowRight size={18} />
-              </a>
+              </button>
 
-              <a
-                href="#about"
+              <button
+                type="button"
                 onClick={(event) => handleSectionNav(event, '#about')}
                 className="hero-action inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 font-bold !text-white shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/20"
               >
                 <Target size={18} /> Learn About SportsHub
-              </a>
+              </button>
             </div>
 
           </div>
@@ -361,13 +367,13 @@ export default function LandingPage({ authModal }) {
                 <button type="submit" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-cyan-500 px-6 font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-400">
                   Send Inquiry <Send size={18} />
                 </button>
-                <a
-                  href={PUBLIC_ROUTES.signUp}
+                <button
+                  type="button"
                   onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
                   className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-slate-200 px-6 font-bold text-slate-700 transition hover:border-cyan-300 hover:text-slate-950"
                 >
                   Create Account
-                </a>
+                </button>
               </div>
             </motion.form>
           </div>
@@ -376,24 +382,24 @@ export default function LandingPage({ authModal }) {
 
       <footer className="border-t border-slate-200 bg-white px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-          <Logo />
+          <Logo onHome={navigateHome} />
           <div className="flex flex-wrap gap-5 text-sm font-medium text-slate-600">
             {['Home', 'Features', 'About', 'CTA'].map((item) => (
-              <a
+              <button
+                type="button"
                 key={item}
-                href={`#${item.toLowerCase()}`}
                 onClick={(event) => handleSectionNav(event, `#${item.toLowerCase()}`)}
                 className="hover:text-slate-950"
               >
                 {item}
-              </a>
+              </button>
             ))}
           </div>
           <div className="flex gap-3">
             {[Share2, Network, PanelsTopLeft].map((SocialIcon, index) => (
-              <a key={index} href="#" className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-slate-600 transition hover:border-cyan-300 hover:text-slate-950" aria-label="Social media profile">
+              <button key={index} type="button" className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-slate-600 transition hover:border-cyan-300 hover:text-slate-950" aria-label="Social media profile">
                 <SocialIcon size={18} />
-              </a>
+              </button>
             ))}
           </div>
         </div>

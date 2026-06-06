@@ -30,4 +30,6 @@ dist-ssr
 *.sw?
 
 # Vercel
-vercel/
+.vercel/
+vercel
+.vercel

@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Navigate, Route, useLocation } from 'react-router-dom'
+import AppLayout from '../components/layout/AppLayout'
 import { ROLES, STATUSES } from '../contexts/AuthContext'
 import { useAuth } from '../hooks/useAuth.jsx'
 import CoachDashboard from '../pages/Coach/Dashboard'
@@ -75,221 +76,203 @@ function ProtectedRoute({ children, allowedRoles }) {
   return children
 }
 
+function ProtectedLayout() {
+  return (
+    <ProtectedRoute>
+      <AppLayout />
+    </ProtectedRoute>
+  )
+}
+
 export const protectedRoutes = [
   <Route
     key="/dashboard"
-    path="/dashboard"
-    element={
-      <ProtectedRoute>
-        <RoleRedirect />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/dashboard"
-    path="/organizer/dashboard"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerDashboard />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/sports"
-    path="/organizer/sports"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerSportsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/events"
-    path="/organizer/events"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerEventsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/team-structures"
-    path="/organizer/team-structures"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerTeamStructuresPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/teams"
-    path="/organizer/teams"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerTeamsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/requests"
-    path="/organizer/requests"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerRequestsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/analytics"
-    path="/organizer/analytics"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerAnalyticsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/users"
-    path="/organizer/users"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerUsersPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/facilitators"
-    path="/organizer/facilitators"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerFacilitatorsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/schedule"
-    path="/organizer/schedule"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerSchedulePage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/organizer/settings"
-    path="/organizer/settings"
-    element={
-      <ProtectedRoute allowedRoles={organizerRoles}>
-        <OrganizerSettingsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/coach/dashboard"
-    path="/coach/dashboard"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.COACH]}>
-        <CoachDashboard />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/coach/teams"
-    path="/coach/teams"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.COACH]}>
-        <CoachTeamsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/coach/requests"
-    path="/coach/requests"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.COACH]}>
-        <CoachRequestsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/facilitator/dashboard"
-    path="/facilitator/dashboard"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
-        <FacilitatorDashboard />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/facilitator/sports"
-    path="/facilitator/sports"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
-        <FacilitatorSportsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/facilitator/events"
-    path="/facilitator/events"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
-        <FacilitatorEventsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/facilitator/teams"
-    path="/facilitator/teams"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
-        <FacilitatorTeamsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/facilitator/schedule"
-    path="/facilitator/schedule"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
-        <FacilitatorSchedulePage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/player/dashboard"
-    path="/player/dashboard"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
-        <PlayerDashboard />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/player/teams"
-    path="/player/teams"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
-        <PlayerTeamsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/player/requests"
-    path="/player/requests"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
-        <PlayerRequestsPage />
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="/player/profile"
-    path="/player/profile"
-    element={
-      <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
-        <PlayerProfilePage />
-      </ProtectedRoute>
-    }
-  />,
+    element={<ProtectedLayout />}
+  >
+    <Route path="/dashboard" element={<RoleRedirect />} />
+    <Route
+      path="/organizer/dashboard"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerDashboard />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/users"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerUsersPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/coach/dashboard"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.COACH]}>
+          <CoachDashboard />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/facilitator/dashboard"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
+          <FacilitatorDashboard />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/player/dashboard"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
+          <PlayerDashboard />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/sports"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerSportsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/events"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerEventsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/team-structures"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerTeamStructuresPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/teams"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerTeamsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/requests"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerRequestsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/analytics"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerAnalyticsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/facilitators"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerFacilitatorsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/schedule"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerSchedulePage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/organizer/settings"
+      element={
+        <ProtectedRoute allowedRoles={organizerRoles}>
+          <OrganizerSettingsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/coach/teams"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.COACH]}>
+          <CoachTeamsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/coach/requests"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.COACH]}>
+          <CoachRequestsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/facilitator/sports"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
+          <FacilitatorSportsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/facilitator/events"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
+          <FacilitatorEventsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/facilitator/teams"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
+          <FacilitatorTeamsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/facilitator/schedule"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.FACILITATOR]}>
+          <FacilitatorSchedulePage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/player/teams"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
+          <PlayerTeamsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/player/requests"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
+          <PlayerRequestsPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/player/profile"
+      element={
+        <ProtectedRoute allowedRoles={[ROLES.PLAYER]}>
+          <PlayerProfilePage />
+        </ProtectedRoute>
+      }
+    />
+  </Route>,
 ]
