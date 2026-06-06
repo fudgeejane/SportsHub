@@ -36,41 +36,41 @@ const navLinks = [
 
 const features = [
   {
+    icon: UserCheck,
+    title: 'Multi-Stage Player Registration',
+    points: ['Player signup with skill level', 'Coach approval workflow', 'Team assignment system', 'Payment verification process'],
+  },
+  {
     icon: UsersRound,
-    title: 'Automated Scheduling',
-    points: ['Create sports events', 'Organize dates and venues', 'Manage community activities', 'Reduce manual coordination'],
+    title: 'Team & Roster Management',
+    points: ['Create and manage teams', 'Skill-based team assignment', 'Track team composition', 'Monitor member status'],
   },
   {
     icon: Workflow,
-    title: 'Skill-Based Player Matching',
-    points: ['Match suitable teammates', 'Find balanced opponents', 'Support fair teams', 'Improve participation quality'],
+    title: 'Role-Based Access Control',
+    points: ['Community organizer controls', 'Coach approval system', 'Facilitator payment verification', 'Player participation tracking'],
   },
   {
-    icon: MessageSquareText,
-    title: 'Communication Tools',
-    points: ['Send activity updates', 'Share schedules', 'Notify participants', 'Support facilitators and organizers'],
-  },
-  {
-    icon: UserCheck,
-    title: 'Participant Accounts',
-    points: ['User registration', 'Account management', 'Schedule access', 'Player activity records'],
+    icon: Trophy,
+    title: 'Event & Sport Management',
+    points: ['Create sports events', 'Set registration fees', 'Manage event dates and venues', 'Track event participation'],
   },
   {
     icon: BarChart3,
-    title: 'Performance Analytics',
-    points: ['Track participation', 'Monitor activity records', 'Support coaching decisions', 'Review player progress'],
+    title: 'Payment & Financial Tracking',
+    points: ['Player payment submission', 'Multiple payment methods', 'Facilitator verification', 'Payment status tracking'],
   },
   {
     icon: ShieldCheck,
-    title: 'Secure Event Management',
-    points: ['Protected records', 'Reliable access', 'Organizer controls', 'Study-ready evaluation data'],
+    title: 'Scheduling & Bracket System',
+    points: ['Automated bracket generation', 'Status-based eligibility', 'Schedule management', 'Team readiness validation'],
   },
 ]
 
 const benefits = [
-  { title: 'Improves Coordination', text: 'Automated scheduling and communication reduce manual work for community events.' },
-  { title: 'Promotes Fair Participation', text: 'Skill-based matching helps balance teams, opponents, and recreational activities.' },
-  { title: 'Supports Better Decisions', text: 'Performance tracking and activity analytics give organizers and coaches useful records.' },
+  { title: 'Streamlined Registration Flow', text: 'Multi-stage approval process ensures only verified, payment-approved players participate in events.' },
+  { title: 'Clear Role Responsibilities', text: 'Coaches approve players, facilitators verify payments, and organizers manage events with defined workflows.' },
+  { title: 'Complete Payment Integration', text: 'Built-in payment tracking with multiple methods ensures financial accountability before scheduling.' },
 ]
 
 const fadeUp = {
@@ -93,9 +93,6 @@ export default function LandingPage({ authModal }) {
   const navigate = useNavigate()
   const location = useLocation()
   const heroSectionRef = useRef(null)
-  const signupSuccess = location.state?.signupSuccess
-  const playerJoinPending = location.state?.playerJoinPending
-
   useEmailVerificationHandler()
 
   const scrollToSection = useCallback((href, behavior = 'smooth') => {
@@ -114,7 +111,7 @@ export default function LandingPage({ authModal }) {
     scrollToSection(href)
   }
 
-  const openAuthModal = (event, route) => {
+  const openAuthModal = (_event, route) => {
     navigate(route, { state: { restoreScrollY: window.scrollY } })
   }
 
@@ -244,11 +241,11 @@ export default function LandingPage({ authModal }) {
             </span>
 
             <h1 className="hero-animate mx-auto mt-6 max-w-4xl text-4xl font-bold leading-[1.05] text-white sm:text-6xl lg:text-7xl">
-              SportsHub: A Smarter Way to Manage Community Sports.
+              SportsHub: Complete Community Sports Management System
             </h1>
 
             <p className="hero-animate mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-100">
-              SportsHub improves the management of community sports and recreational events through automated scheduling, fair player matching, communication tools, and performance tracking.
+              A comprehensive platform managing the complete player lifecycle—from registration and coach approval to team assignment, payment verification, and automated scheduling with bracket generation.
             </p>
 
             <div className="hero-animate mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -294,9 +291,9 @@ export default function LandingPage({ authModal }) {
         </section>
 
         <section id="about" className="section-band">
-          <SectionHeading eyebrow="About SportsHub" title="A study-driven platform for smarter local sports management." />
+          <SectionHeading eyebrow="About SportsHub" title="End-to-end platform for municipal sports program management." />
           <div className="mx-auto mt-8 max-w-4xl px-4 text-center text-lg leading-8 text-slate-600 sm:px-6 lg:px-8">
-            SportsHub aims to improve the management of community sports and recreational events through technology. By automating scheduling, player matching, and performance tracking, the platform enhances coordination, fairness, and participation in local sports programs.
+            SportsHub provides a complete workflow system for community sports management at the municipal level. The platform handles player registration with skill assessment, multi-stage approval workflows involving coaches and facilitators, team roster management, integrated payment tracking with verification, and automated bracket generation for scheduled events. Each role—from community organizers to players—has tailored access and responsibilities ensuring no incomplete teams, unpaid players, or unauthorized access.
           </div>
           <div className="mx-auto mt-10 grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
             {benefits.map((benefit) => (
@@ -314,10 +311,10 @@ export default function LandingPage({ authModal }) {
             <motion.div {...fadeUp} className="text-center lg:text-left">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-cyan-300">Inquiry</p>
               <h2 className="mt-4 text-3xl font-bold leading-tight text-white sm:text-4xl">
-                Ready to make community sports more organized and inclusive?
+                Ready to streamline your municipal sports program?
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300 lg:mx-0">
-                Send an inquiry for community events, organizer access, coaching tools, player matching, scheduling support, or SportsHub study details.
+                Contact us for municipal organizer access, coach and facilitator roles, player registration guidance, payment system integration, or scheduling and bracket generation support.
               </p>
               <div className="mt-7 grid gap-3 text-left sm:grid-cols-2 lg:max-w-2xl">
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-slate-200">
@@ -358,11 +355,12 @@ export default function LandingPage({ authModal }) {
                   Inquiry type
                   <select required className="min-h-12 rounded-2xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" name="type" defaultValue="">
                     <option value="" disabled>Select topic</option>
-                    <option>Event scheduling</option>
-                    <option>Player matching</option>
-                    <option>Performance tracking</option>
                     <option>Organizer access</option>
-                    <option>Study reference</option>
+                    <option>Coach/Facilitator role</option>
+                    <option>Player registration</option>
+                    <option>Payment integration</option>
+                    <option>Event & bracket system</option>
+                    <option>System demo</option>
                   </select>
                 </label>
               </div>
