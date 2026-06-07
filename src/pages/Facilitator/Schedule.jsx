@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Calendar, Clock, Trophy, Users } from 'lucide-react'
+import { Calendar, Trophy, Users } from 'lucide-react'
 import ScheduleBracket from '../../components/schedule/ScheduleBracket'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { useBrackets } from '../../hooks/useBrackets'
@@ -34,7 +34,6 @@ export default function FacilitatorSchedulePage() {
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mb-4">
           {myEvents.map((event) => {
             const isSelected = selectedEvent?.id === event.id
-            const eventTeamCount = brackets.eventTeams.length || 0
 
             return (
               <button

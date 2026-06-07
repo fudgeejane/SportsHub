@@ -6,7 +6,6 @@ import {
   Medal,
   UserCog,
   Users,
-  UserRound,
 } from 'lucide-react'
 import { ROLES } from '../contexts/AuthContext'
 

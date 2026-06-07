@@ -33,7 +33,6 @@ export default function FacilitatorDashboard() {
   )
 
   const pendingPayments = paymentState.payments.filter((payment) => payment.paymentStatus === 'pending').length
-  const approvedPayments = paymentState.payments.filter((payment) => payment.paymentStatus === 'approved').length
   const scheduledEvents = assignedEvents.filter((event) => (event.schedule || []).length).length
 
   return (

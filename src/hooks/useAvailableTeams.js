@@ -22,7 +22,6 @@ export function useAvailableTeams(sportId) {
       return undefined
     }
 
-    setLoading(true)
     const teamsQuery = query(
       collection(db, 'teams'),
       where('sportId', '==', sportId),

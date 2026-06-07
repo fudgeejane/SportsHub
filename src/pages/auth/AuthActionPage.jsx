@@ -5,9 +5,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import AuthPageShell from '../../components/auth/AuthPageShell'
 import { auth } from '../../firebase'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
-import { toastError, toastSuccess } from '../../utils/toast'
-
-const REDIRECT_DELAY = 2200
+import { toastError } from '../../utils/toast'
 
 function StatusPanel({ status, title, message }) {
   const Icon = status === 'success' ? CheckCircle2 : status === 'error' ? CircleAlert : Loader2

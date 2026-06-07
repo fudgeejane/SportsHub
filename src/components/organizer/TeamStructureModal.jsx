@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { emptyTeamStructure, isValidTeamStructure, normalizeTeamStructure } from '../../constants/teamStructure'
+import { isValidTeamStructure, normalizeTeamStructure } from '../../constants/teamStructure'
 
 function inputClass() {
   return 'min-h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
@@ -10,11 +10,11 @@ export default function TeamStructureModal({ sport, onClose, onSave, saving = fa
   const [error, setError] = useState('')
 
   useEffect(() => {
-    // Update form when sport prop changes
-    if (sport) {
+    if (!sport) return
+    queueMicrotask(() => {
       setForm(normalizeTeamStructure(sport.teamStructure))
       setError('')
-    }
+    })
   }, [sport])
 
   const submit = async (event) => {

@@ -12,19 +12,9 @@ export default function PlayerTeamsPage() {
     [currentUser?.uid, system.members],
   )
 
-  // Get the first active membership (assuming player is in one team)
-  const currentMembership = activeMemberships[0]
-  const currentTeam = useMemo(
-    () => currentMembership ? system.teams.find(t => t.id === currentMembership.teamId) : null,
-    [currentMembership, system.teams]
-  )
 
-  const teamMembers = useMemo(
-    () => currentTeam 
-      ? system.members.filter(m => m.teamId === currentTeam.id && m.status === 'ACTIVE')
-      : [],
-    [currentTeam, system.members]
-  )
+
+  // teamMembers are computed per membership below when rendering
 
   return (
     <section className="grid gap-5">

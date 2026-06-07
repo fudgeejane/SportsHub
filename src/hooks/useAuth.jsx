@@ -10,10 +10,13 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
+  deleteUser as firebaseDeleteUser,
   updatePassword,
   updateProfile,
 } from 'firebase/auth'
-import { collection, doc, getDoc, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { getFunctions, httpsCallable } from 'firebase/functions'
+import { app } from '../firebase'
 import { MEMBERSHIP_STATUS } from '../constants/membership'
 import { toastError, toastSuccess } from '../utils/toast'
 import { AuthContext, ROLES, STATUSES } from '../contexts/AuthContext.jsx'
@@ -147,6 +150,45 @@ export function useUserManagement(reviewerId) {
     [startLoading],
   )
 
+    const deleteUser = useCallback(
+      async (uid) => {
+        setError('')
+        const stopGlobalLoading = startLoading('Deleting user...')
+        try {
+          await deleteDoc(doc(db, 'users', uid))
+          toastSuccess('User removed from Firestore.')
+          // Try callable Cloud Function to remove user from Firebase Auth (requires admin privileges)
+          try {
+            const functions = getFunctions(app)
+            const del = httpsCallable(functions, 'deleteUser')
+            await del({ uid })
+            toastSuccess('User removed from Firebase Authentication (via Cloud Function).')
+          } catch (fnError) {
+            // If callable not available or failed, attempt to delete auth record only if it's the current user
+            if (auth.currentUser && auth.currentUser.uid === uid) {
+              try {
+                await firebaseDeleteUser(auth.currentUser)
+                toastSuccess('User removed from Firebase Authentication.')
+                await firebaseSignOut(auth)
+              } catch (authDeleteError) {
+                toastError(`Deleted Firestore record but failed to remove from Auth: ${authDeleteError.message}`)
+              }
+            } else {
+              // Non-current-user Auth deletion requires backend admin privileges; inform the admin
+              console.warn('Callable deleteUser failed or not available:', fnError?.message || fnError)
+            }
+          }
+        } catch (deleteError) {
+          setError(deleteError.message)
+          toastError(`Failed to delete user: ${deleteError.message}`)
+          throw deleteError
+        } finally {
+          stopGlobalLoading()
+        }
+      },
+      [startLoading],
+    )
+
   const approveUser = useCallback(
     (uid) =>
       runUserUpdate(uid, {
@@ -171,7 +213,7 @@ export function useUserManagement(reviewerId) {
 
   const changeRole = useCallback((uid, role) => runUserUpdate(uid, { role }), [runUserUpdate])
 
-  return { users, loading, error, approveUser, rejectUser, changeRole, updateUser: runUserUpdate }
+  return { users, loading, error, approveUser, rejectUser, changeRole, updateUser: runUserUpdate, deleteUser }
 }
 
 export function useAuth() {

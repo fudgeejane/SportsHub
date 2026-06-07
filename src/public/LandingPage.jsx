@@ -6,7 +6,6 @@ import {
   BarChart3,
   Check,
   Mail,
-  MessageSquareText,
   Network,
   PanelsTopLeft,
   Phone,

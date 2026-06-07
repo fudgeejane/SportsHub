@@ -15,7 +15,7 @@ export function formatDate(date) {
       day: 'numeric',
       year: 'numeric'
     })
-  } catch (error) {
+  } catch {
     return ''
   }
 }
@@ -34,7 +34,7 @@ export function formatTime(time) {
     const hour12 = hours % 12 || 12
     
     return `${hour12}:${String(minutes).padStart(2, '0')} ${period}`
-  } catch (error) {
+  } catch {
     return ''
   }
 }
@@ -74,7 +74,7 @@ export function formatTimestamp(timestamp) {
       minute: '2-digit',
       hour12: true
     })
-  } catch (error) {
+  } catch {
     return ''
   }
 }

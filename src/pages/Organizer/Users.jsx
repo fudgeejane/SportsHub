@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ROLES, STATUSES } from '../../contexts/AuthContext'
 import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
-import { Search, ChevronRight, ChevronLeft, Pencil, Trash2 } from 'lucide-react'
+import { Search, ChevronRight, ChevronLeft, Pencil, Trash2, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 
 const roleOptions = [ROLES.COMMUNITY_ORGANIZER, ROLES.COACH, ROLES.FACILITATOR, ROLES.PLAYER]
 const PAGE_SIZE = 10
@@ -21,7 +21,9 @@ const formatLabel = (value) =>
 
 export default function OrganizerUsersPage() {
   const { currentUser } = useAuth()
-  const { users, loading, error, approveUser, rejectUser, changeRole } = useUserManagement(currentUser?.uid)
+  const { users, loading, approveUser, rejectUser, changeRole, deleteUser } = useUserManagement(currentUser?.uid)
+  const [sortBy, setSortBy] = useState('displayName')
+  const [sortDir, setSortDir] = useState('asc')
   const [searchQuery, setSearchQuery] = useState('')
   const [pendingRoleFilter, setPendingRoleFilter] = useState('ALL')
   const [pageIndex, setPageIndex] = useState(0)
@@ -36,17 +38,37 @@ export default function OrganizerUsersPage() {
   const filteredUsers = useMemo(() => {
     const nonPendingUsers = users.filter((user) => user.status !== STATUSES.PENDING)
 
-    if (!normalizedSearch) return nonPendingUsers
+    let results = nonPendingUsers
 
-    return nonPendingUsers.filter((user) => {
+    if (normalizedSearch) {
+      results = nonPendingUsers.filter((user) => {
       const searchTarget = [user.displayName, user.email, user.role, user.status]
         .filter(Boolean)
         .join(' ')
         .toLowerCase()
 
       return searchTarget.includes(normalizedSearch)
+      })
+    }
+
+    // Sorting
+    const dir = sortDir === 'asc' ? 1 : -1
+    results = results.slice().sort((a, b) => {
+      const va = (a[sortBy] || '').toString().toLowerCase()
+      const vb = (b[sortBy] || '').toString().toLowerCase()
+      if (va < vb) return -1 * dir
+      if (va > vb) return 1 * dir
+      return 0
     })
-  }, [normalizedSearch, users])
+
+    return results
+  }, [normalizedSearch, users, sortBy, sortDir])
+
+  useEffect(() => {
+    // Reset to first page when search or sorting changes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPageIndex(0)
+  }, [normalizedSearch, sortBy, sortDir])
 
   const pageCount = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE))
 
@@ -65,18 +87,36 @@ export default function OrganizerUsersPage() {
     (user) => user.status === STATUSES.PENDING && (user.role === ROLES.COACH || user.role === ROLES.FACILITATOR),
   ).length
 
-  const approvalQueue = users.filter((user) => {
-    const organizerManagedRole = user.role === ROLES.COACH || user.role === ROLES.FACILITATOR
-    if (!organizerManagedRole || user.status !== STATUSES.PENDING) return false
-    if (pendingRoleFilter !== 'ALL' && user.role !== pendingRoleFilter) return false
-    if (!normalizedSearch) return true
+  const approvalQueue = useMemo(() => {
+    const list = users.filter((user) => {
+      const organizerManagedRole = user.role === ROLES.COACH || user.role === ROLES.FACILITATOR
+      if (!organizerManagedRole || user.status !== STATUSES.PENDING) return false
+      if (pendingRoleFilter !== 'ALL' && user.role !== pendingRoleFilter) return false
+      return true
+    })
 
-    return [user.displayName, user.email, user.role, user.status]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-      .includes(normalizedSearch)
-  })
+    const searched = normalizedSearch
+      ? list.filter((user) =>
+          [user.displayName, user.email, user.role, user.status]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(normalizedSearch),
+        )
+      : list
+
+    const dir = sortDir === 'asc' ? 1 : -1
+    const sorted = searched.slice().sort((a, b) => {
+      const va = (a[sortBy] || '').toString().toLowerCase()
+      const vb = (b[sortBy] || '').toString().toLowerCase()
+      if (va < vb) return -1 * dir
+      if (va > vb) return 1 * dir
+      return 0
+    })
+
+    return sorted
+  }, [users, normalizedSearch, pendingRoleFilter, sortBy, sortDir])
+
 
   const handleEditUser = (user) => {
     setEditingUser(user)
@@ -98,7 +138,7 @@ export default function OrganizerUsersPage() {
   const confirmDeleteUser = async () => {
     if (!deletingUser) return
     try {
-      await changeRole(deletingUser.uid || deletingUser.id, 'DELETED')
+      await deleteUser(deletingUser.uid || deletingUser.id)
       setDeletingUser(null)
     } catch {
       // error handled in hook
@@ -154,18 +194,24 @@ export default function OrganizerUsersPage() {
               <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
               
                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative w-full sm:w-80">
-                  <Search
-                    size={18}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  />
-                  <input
-                    value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search users by name, email, role, or status"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white"
-                  />
-                </div>
+                 <div className="relative w-full sm:w-80">
+                   {loading ? (
+                     <div className="h-10 w-full animate-pulse rounded bg-slate-100" />
+                   ) : (
+                     <>
+                       <Search
+                         size={18}
+                         className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                       />
+                       <input
+                         value={searchQuery}
+                         onChange={(event) => setSearchQuery(event.target.value)}
+                         placeholder="Search users by name, email, role, or status"
+                         className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white"
+                       />
+                     </>
+                   )}
+                 </div>
               </div>
 
               <div className='flex items-center gap-2'>
@@ -197,16 +243,91 @@ export default function OrganizerUsersPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[860px] text-left text-sm">
-                  <thead className="bg-slate-100 border-b border-slate-200 text-xs uppercase  text-blue-700">
-                    <tr>
-                      <th className="px-4 py-2 w-[30%]">User</th>
-                      <th className="px-4 py-2 w-[30%]">Email</th>
-                      <th className="px-4 py-2 w-[20%]">Role</th>
-                      <th className="px-4 py-2 w-[20%]">Actions</th>
-                    </tr>
-                  </thead>
+                 <thead className="bg-slate-100 border-b border-slate-200 text-xs uppercase tracking-wider text-blue-700">
+                  <tr>
+                    <th className="px-4 py-2 w-[30%]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSortBy('displayName')
+                          setSortDir(sortBy === 'displayName' && sortDir === 'asc' ? 'desc' : 'asc')
+                        }}
+                        className="flex items-center gap-2 text-xs uppercase"
+                      >
+                        User
+                        {sortBy === 'displayName' ? (
+                          sortDir === 'asc' ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-4 w-4 opacity-40" />
+                        )}
+                      </button>
+                    </th>
+
+                    <th className="px-4 py-2 w-[30%]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSortBy('email')
+                          setSortDir(sortBy === 'email' && sortDir === 'asc' ? 'desc' : 'asc')
+                        }}
+                        className="flex items-center gap-2 text-xs uppercase"
+                      >
+                        Email
+                        {sortBy === 'email' ? (
+                          sortDir === 'asc' ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-4 w-4 opacity-40" />
+                        )}
+                      </button>
+                    </th>
+
+                    <th className="px-4 py-2 w-[20%]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSortBy('role')
+                          setSortDir(sortBy === 'role' && sortDir === 'asc' ? 'desc' : 'asc')
+                        }}
+                        className="flex items-center gap-2 text-xs uppercase"
+                      >
+                        Role
+                        {sortBy === 'role' ? (
+                          sortDir === 'asc' ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )
+                        ) : (
+                          <ChevronsUpDown className="h-4 w-4 opacity-40" />
+                        )}
+                      </button>
+                    </th>
+
+                    <th className="px-4 py-2 w-[20%] text-xs uppercase">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
                   <tbody className="divide-y divide-slate-200">
-                    {currentPageUsers.length ? (
+                    {loading ? (
+                      // skeleton rows
+                      Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                        <tr key={`skeleton-${i}`}>
+                          <td className="px-4 py-4"><div className="h-4 w-36 animate-pulse rounded bg-slate-100"/></td>
+                          <td className="px-4 py-4"><div className="h-4 w-48 animate-pulse rounded bg-slate-100"/></td>
+                          <td className="px-4 py-4"><div className="h-4 w-24 animate-pulse rounded bg-slate-100"/></td>
+                          <td className="px-4 py-4"><div className="h-6 w-24 animate-pulse rounded bg-slate-100"/></td>
+                        </tr>
+                      ))
+                    ) : currentPageUsers.length ? (
                       currentPageUsers.map((user) => (
                         <tr key={user.uid || user.id}
                           className="hover:bg-gray-50 cursor-pointer"
@@ -254,23 +375,67 @@ export default function OrganizerUsersPage() {
                   <h3 className="text-lg font-semibold text-slate-950">Pending Approval</h3>
                   <p className="mt-1 text-sm text-slate-600">Review coach and facilitator accounts after email verification.</p>
                 </div>
-                <select
-                  value={pendingRoleFilter}
-                  onChange={(event) => setPendingRoleFilter(event.target.value)}
-                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
-                >
-                  <option value="ALL">All pending roles</option>
-                  <option value={ROLES.COACH}>Coaches</option>
-                  <option value={ROLES.FACILITATOR}>Facilitators</option>
-                </select>
+                {loading ? (
+                  <div className="h-10 w-48 animate-pulse rounded bg-slate-100" />
+                ) : (
+                  <select
+                    value={pendingRoleFilter}
+                    onChange={(event) => setPendingRoleFilter(event.target.value)}
+                    className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
+                  >
+                    <option value="ALL">All pending roles</option>
+                    <option value={ROLES.COACH}>Coaches</option>
+                    <option value={ROLES.FACILITATOR}>Facilitators</option>
+                  </select>
+                )}
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[860px] text-left text-sm">
                   <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
                     <tr>
-                      <th className="px-5 py-3">User</th>
-                      <th className="px-5 py-3">Role</th>
+                      <th className="px-5 py-3 w-[30%]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSortBy('displayName')
+                            setSortDir(sortBy === 'displayName' && sortDir === 'asc' ? 'desc' : 'asc')
+                          }}
+                          className="flex items-center gap-2 text-xs uppercase"
+                        >
+                          User
+                          {sortBy === 'displayName' ? (sortDir === 'asc' ? <ChevronUp className='h-3 w-3'/> : <ChevronDown className='h-3 w-3'/>) : <ChevronsUpDown className='h-3 w-3 opacity-40'/>}
+                        </button>
+                      </th>
+
+                      <th className="px-5 py-3 w-[30%]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSortBy('email')
+                            setSortDir(sortBy === 'email' && sortDir === 'asc' ? 'desc' : 'asc')
+                          }}
+                          className="flex items-center gap-2 text-xs uppercase"
+                        >
+                          Email
+                          {sortBy === 'email' ? (sortDir === 'asc' ? <ChevronUp className='h-3 w-3'/> : <ChevronDown className='h-3 w-3'/>) : <ChevronsUpDown className='h-3 w-3 opacity-40'/>}
+                        </button>
+                      </th>
+
+                      <th className="px-5 py-3 w-[20%]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSortBy('role')
+                            setSortDir(sortBy === 'role' && sortDir === 'asc' ? 'desc' : 'asc')
+                          }}
+                          className="flex items-center gap-2 text-xs uppercase"
+                        >
+                          Role
+                          {sortBy === 'role' ? (sortDir === 'asc' ? <ChevronUp className='h-3 w-3'/> : <ChevronDown className='h-3 w-3'/>) : <ChevronsUpDown className='h-3 w-3 opacity-40'/>}
+                        </button>
+                      </th>
+
                       <th className="px-5 py-3">Status</th>
                       <th className="px-5 py-3">Email Verified</th>
                       <th className="px-5 py-3">Actions</th>
