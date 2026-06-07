@@ -6,12 +6,15 @@ function inputClass() {
 }
 
 export default function TeamStructureModal({ sport, onClose, onSave, saving = false }) {
-  const [form, setForm] = useState(emptyTeamStructure())
+  const [form, setForm] = useState(() => normalizeTeamStructure(sport?.teamStructure))
   const [error, setError] = useState('')
 
   useEffect(() => {
-    setForm(normalizeTeamStructure(sport?.teamStructure))
-    setError('')
+    // Update form when sport prop changes
+    if (sport) {
+      setForm(normalizeTeamStructure(sport.teamStructure))
+      setError('')
+    }
   }, [sport])
 
   const submit = async (event) => {

@@ -43,8 +43,8 @@ export default function OrganizerSportsPage() {
   }
 
   return (
-    <section className="grid gap-4">
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="text-2xl font-bold text-slate-950">Sports Management</h2>
             <p className="mt-1 text-sm leading-6 text-slate-600">Create sports and configure team structure on each sport document.</p>
@@ -68,11 +68,19 @@ export default function OrganizerSportsPage() {
               const configured = isValidTeamStructure(structure)
 
               return (
-                <article key={sport.id} className="rounded-2xl border border-slate-200 p-4">
+                <article key={sport.id} className="rounded-xl bg-white border border-slate-200 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="font-black text-slate-950">{sport.name}</h3>
-                      <p className="mt-1 text-sm leading-6 text-slate-600">{sport.description || 'No description added.'}</p>
+                      <h3 className="font-semibold text-lg text-slate-950">{sport.name}</h3>
+                        <p className="mt-0.5 text-xs font-semibold text-slate-500">
+                    {configured
+                      ? `Structure: ${structure.minTeams}-${structure.maxTeams} teams, ${structure.minPlayersPerTeam}-${structure.maxPlayersPerTeam} players`
+                      : 'Team structure not configured'}
+                  </p>
+                  <p>
+                  {structure.minTeams} {structure.maxTeams}
+                  </p>
+
                     </div>
                     <div className="relative">
                       <button
@@ -111,11 +119,7 @@ export default function OrganizerSportsPage() {
                     </div>
                   </div>
 
-                  <p className="mt-3 text-xs font-semibold text-slate-500">
-                    {configured
-                      ? `Structure: ${structure.minTeams}-${structure.maxTeams} teams, ${structure.minPlayersPerTeam}-${structure.maxPlayersPerTeam} players`
-                      : 'Team structure not configured'}
-                  </p>
+                
 
                 </article>
               )

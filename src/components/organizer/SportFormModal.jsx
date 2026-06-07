@@ -8,17 +8,20 @@ function inputClass() {
 
 export default function SportFormModal({ sport, onClose, onSave, saving = false }) {
   const isEdit = Boolean(sport?.id)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [teamStructure, setTeamStructure] = useState(emptyTeamStructure())
+  const [name, setName] = useState(sport?.name || '')
+  const [description, setDescription] = useState(sport?.description || '')
+  const [teamStructure, setTeamStructure] = useState(() => normalizeTeamStructure(sport?.teamStructure))
   const [structureOpen, setStructureOpen] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    setName(sport?.name || '')
-    setDescription(sport?.description || '')
-    setTeamStructure(normalizeTeamStructure(sport?.teamStructure))
-    setError('')
+    // Update state when sport prop changes
+    if (sport) {
+      setName(sport.name || '')
+      setDescription(sport.description || '')
+      setTeamStructure(normalizeTeamStructure(sport.teamStructure))
+      setError('')
+    }
   }, [sport])
 
   const submit = async (event) => {

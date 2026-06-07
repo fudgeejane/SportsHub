@@ -1,6 +1,6 @@
 import { Clock, MapPin, Pencil, Trophy, X } from 'lucide-react'
 import { useState } from 'react'
-import { formatDate, formatTime, formatDateTime } from '../../utils/dateFormat'
+import { formatDate, formatDateTime } from '../../utils/dateFormat'
 
 export default function ScheduleBracket({ bracket, event, onEditMatch, highlightTeamIds = new Set() }) {
   const [editingMatch, setEditingMatch] = useState(null)
@@ -8,7 +8,6 @@ export default function ScheduleBracket({ bracket, event, onEditMatch, highlight
   const [confirmWinner, setConfirmWinner] = useState(null) // { match, winnerId, winnerName }
   
   const rounds = Object.keys(bracket).sort((a, b) => Number(a) - Number(b))
-  const totalRounds = rounds.length
   
   // Determine team colors based on initial bracket position
   const getTeamColor = (match, isTeamA) => {

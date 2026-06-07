@@ -106,9 +106,9 @@ export default function OrganizerUsersPage() {
   }
 
   return (
-    <section>
-      <div className="mb-4 ">
-        <h2 className="mt-2 text-2xl font-bold text-slate-950">User Management</h2>
+    <section className='space-y-4'>
+      <div>
+        <h2 className="text-2xl font-bold text-slate-950">User Management</h2>
         <p className="mt-1 text-slate-600 text-sm max-w-3xl">Approve users, reject users, and manage SportsHub roles.</p>
       </div>
             
@@ -144,20 +144,17 @@ export default function OrganizerUsersPage() {
         </button>
       </div>
 
-
-      <div className="mt-6">
-        {error ? <p className="mb-4 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</p> : null}
-        {loading ? <p className="mb-4 rounded-2xl bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-700">Loading users...</p> : null}
+      <div>
 
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/5">
        
 
           {activeTab === TABS.USERS ? (
             <>
-              <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
               
                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative w-full sm:w-[360px]">
+                <div className="relative w-full sm:w-80">
                   <Search
                     size={18}
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -200,27 +197,24 @@ export default function OrganizerUsersPage() {
 
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[860px] text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
+                  <thead className="bg-slate-100 border-b border-slate-200 text-xs uppercase  text-blue-700">
                     <tr>
-                      <th className="px-5 py-4">User</th>
-                      <th className="px-5 py-4">Role</th>
-                      <th className="px-5 py-4">Status</th>
-                      <th className="px-5 py-4">Email Verified</th>
-                      <th className="px-5 py-4">Actions</th>
+                      <th className="px-4 py-2 w-[30%]">User</th>
+                      <th className="px-4 py-2 w-[30%]">Email</th>
+                      <th className="px-4 py-2 w-[20%]">Role</th>
+                      <th className="px-4 py-2 w-[20%]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-200">
                     {currentPageUsers.length ? (
                       currentPageUsers.map((user) => (
-                        <tr key={user.uid || user.id}>
-                          <td className="px-5 py-4">
-                            <p className="font-bold text-slate-950">{user.displayName}</p>
-                            <p className="text-slate-500">{user.email}</p>
-                          </td>
-                          <td className="px-5 py-4">{formatLabel(user.role)}</td>
-                          <td className="px-5 py-4">{formatLabel(user.status)}</td>
-                          <td className="px-5 py-4">{user.emailVerified ? 'Yes' : 'No'}</td>
-                          <td className="px-5 py-4">
+                        <tr key={user.uid || user.id}
+                          className="hover:bg-gray-50 cursor-pointer"
+                        >
+                          <td className="px-4 py-2">{user.displayName}</td>
+                          <td className="px-4 py-2">{user.email}</td>
+                          <td className="px-4 py-2">{formatLabel(user.role)}</td>
+                          <td className="px-4 py-2 ">
                             <div className="flex flex-wrap gap-2">
                               <button
                                 onClick={() => handleEditUser(user)}
@@ -275,22 +269,22 @@ export default function OrganizerUsersPage() {
                 <table className="w-full min-w-[860px] text-left text-sm">
                   <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
                     <tr>
-                      <th className="px-5 py-4">User</th>
-                      <th className="px-5 py-4">Role</th>
-                      <th className="px-5 py-4">Status</th>
-                      <th className="px-5 py-4">Email Verified</th>
-                      <th className="px-5 py-4">Actions</th>
+                      <th className="px-5 py-3">User</th>
+                      <th className="px-5 py-3">Role</th>
+                      <th className="px-5 py-3">Status</th>
+                      <th className="px-5 py-3">Email Verified</th>
+                      <th className="px-5 py-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {approvalQueue.length ? (
                       approvalQueue.map((user) => (
                         <tr key={user.uid || user.id}>
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-3">
                             <p className="font-bold text-slate-950">{user.displayName}</p>
                             <p className="text-slate-500">{user.email}</p>
                           </td>
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-3">
                             <select
                               value={user.role}
                               onChange={(event) => changeRole(user.uid || user.id, event.target.value)}
@@ -303,21 +297,21 @@ export default function OrganizerUsersPage() {
                               ))}
                             </select>
                           </td>
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-3">
                             <span className="rounded-full bg-slate-100 px-3 py-1 font-bold text-slate-700">{formatLabel(user.status)}</span>
                           </td>
-                          <td className="px-5 py-4">{user.emailVerified ? 'Yes' : 'No'}</td>
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-3">{user.emailVerified ? 'Yes' : 'No'}</td>
+                          <td className="px-5 py-3">
                             <div className="flex flex-wrap gap-2">
                               <button
                                 onClick={() => approveUser(user.uid || user.id)}
-                                className="inline-flex items-center justify-center rounded-lg px-4 py-2 !text-sm text-white bg-green-500 hover:bg-gren-600 cursor-pointer"
+                                className="inline-flex items-center justify-center rounded-lg px-5 py-3 !text-sm text-white bg-green-500 hover:bg-gren-600 cursor-pointer"
                               > 
                                 Approve
                               </button>
                               <button
                                 onClick={() => rejectUser(user.uid || user.id)}
-                                className="inline-flex items-center justify-center rounded-lg px-4 py-2 !text-sm text-white bg-red-500 hover:bg-red-600 cursor-pointer"
+                                className="inline-flex items-center justify-center rounded-lg px-5 py-3 !text-sm text-white bg-red-500 hover:bg-red-600 cursor-pointer"
                               >
                                 Reject
                               </button>

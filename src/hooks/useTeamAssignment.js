@@ -6,15 +6,14 @@ import { toastError, toastSuccess } from '../utils/toast'
 
 export function useTeamAssignment(coachId) {
   const [pendingPlayers, setPendingPlayers] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(Boolean(coachId))
   const [error, setError] = useState('')
   const { startLoading } = useGlobalLoading()
 
   // Load players awaiting coach approval (PENDING_COACH_APPROVAL)
   useEffect(() => {
     if (!coachId) {
-      setPendingPlayers([])
-      setLoading(false)
+      // No need to update state - handled by initial state
       return
     }
 

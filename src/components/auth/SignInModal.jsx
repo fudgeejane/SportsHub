@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { STATUSES } from '../../contexts/AuthContext'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { isFirebaseConfigComplete } from '../../firebase'
@@ -10,6 +10,7 @@ import { getFriendlyAuthError } from './authModalHelpers'
 export default function SignInModal({ onClose }) {
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { checkUserStatus, currentUser, loading: authLoading, userProfile, signIn } = useAuth()
   const [form, setForm] = useState({
     email: location.state?.email || '',
@@ -18,7 +19,12 @@ export default function SignInModal({ onClose }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const statusMessage = location.state?.emailVerified
+  // Check both location.state and URL query parameters for emailVerified
+  const emailVerifiedFromState = location.state?.emailVerified
+  const emailVerifiedFromQuery = searchParams.get('emailVerified') === 'true'
+  const emailVerified = emailVerifiedFromState || emailVerifiedFromQuery
+
+  const statusMessage = emailVerified
     ? 'Email verified. Sign in to access your dashboard.'
     : location.state?.verifyError
       ? 'Verification link is invalid or expired. Sign in or request a new verification email.'

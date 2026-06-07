@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { normalizeTeamStructure } from '../constants/teamStructure'
+import { COLLECTIONS, normalizeNumber } from '../constants/collections'
 import { db } from '../firebase'
 import { useEvents } from './useEvents'
 import { useRegistration } from './useRegistration'
@@ -9,21 +10,7 @@ import { useGlobalLoading } from './useGlobalLoading.jsx'
 import { useAuth } from './useAuth.jsx'
 import { useLiveCollection } from './useLiveCollection'
 
-export const COLLECTIONS = {
-  SPORTS: 'sports',
-  EVENTS: 'events',
-  TEAMS: 'teams',
-  TEAM_MEMBERS: 'teamMembers',
-  TEAM_JOIN_REQUESTS: 'teamJoinRequests',
-}
-
 export { JOIN_REQUEST_STATUS } from '../utils/joinRequests'
-
-function normalizeNumber(value, fallback = 0) {
-  if (value === '' || value === null || value === undefined) return fallback
-  const number = Number(value)
-  return Number.isFinite(number) ? number : fallback
-}
 
 export function useSportsSystem() {
   const { currentUser } = useAuth()

@@ -67,6 +67,43 @@ npm run build
 npm run preview
 ```
 
+## Email Verification
+
+SportsHub uses **programmatic email verification** that requires minimal Firebase Console configuration.
+
+### Quick Setup (15 minutes)
+
+1. **Add domain to Firebase Authorized Domains**
+   - Go to Firebase Console → Authentication → Settings → Authorized domains
+   - Add: `sports-hub-khaki.vercel.app` (or your custom domain)
+
+2. **Deploy the code**
+   ```bash
+   git push origin main
+   ```
+
+3. **Test the flow**
+   - Sign up → Check email → Click verification link → Log in
+
+**That's it!** See [`QUICK_START.md`](./QUICK_START.md) for details.
+
+### Documentation
+
+- **Quick Start**: [`QUICK_START.md`](./QUICK_START.md) - 15-minute setup guide
+- **Firebase Setup**: [`FIREBASE_CONSOLE_SETUP.md`](./FIREBASE_CONSOLE_SETUP.md) - Detailed Firebase instructions
+- **Technical Details**: [`docs/EMAIL_VERIFICATION_SETUP.md`](./docs/EMAIL_VERIFICATION_SETUP.md) - Complete implementation guide
+- **Quick Reference**: [`docs/EMAIL_VERIFICATION_QUICK_REFERENCE.md`](./docs/EMAIL_VERIFICATION_QUICK_REFERENCE.md) - Developer cheat sheet
+
+### How It Works
+
+Users receive a verification email with a link to `/auth/action`. The page:
+- ✅ Validates the verification code
+- ✅ Verifies the email automatically
+- ✅ Displays success message
+- ✅ Redirects to login after 2.2 seconds
+
+All configuration is in code - no Firebase Console email action URL setup needed!
+
 ## Notes
 
 - The admin setup page creates a Community Organizer account with approved access.

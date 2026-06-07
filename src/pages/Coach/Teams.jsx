@@ -28,7 +28,7 @@ export default function CoachTeamsPage() {
   const [reassigningMember, setReassigningMember] = useState(null)
   const [deleteConfirmMember, setDeleteConfirmMember] = useState(null)
   const visibleTeams = system.teams.filter((team) => team.coachId === currentUser.uid && team.status !== 'ARCHIVED')
-  const coachMembers = system.members.filter((member) => member.coachId === currentUser.uid && member.status === 'ACTIVE')
+  // const coachMembers = system.members.filter((member) => member.coachId === currentUser.uid && member.status === 'ACTIVE')
   const selectedSport = system.sports.find((sport) => sport.id === form.sportId)
   const selectedStructure = normalizeTeamStructure(selectedSport?.teamStructure)
 

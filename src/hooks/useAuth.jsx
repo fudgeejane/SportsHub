@@ -23,6 +23,16 @@ import { useGlobalLoading } from './useGlobalLoading.jsx'
 
 export { AuthContext, ROLES, STATUSES }
 
+// Use Firebase Hosting domain for email action links
+// The page will be hosted on Firebase and redirect to Vercel after success
+const AUTH_ACTION_URL = 'https://sportshub-ffba8.firebaseapp.com/__/auth/action'
+
+// ActionCodeSettings for email verification and password reset
+const authActionCodeSettings = {
+  url: AUTH_ACTION_URL,
+  handleCodeInApp: false, // Must be false to enable redirects to our custom URL
+}
+
 export function buildUserRecord(firebaseUser, role = ROLES.PLAYER, displayName = '') {
   const needsOrganizerApproval = role === ROLES.COACH || role === ROLES.FACILITATOR
   const isPlayer = role === ROLES.PLAYER
@@ -243,7 +253,7 @@ export function useAuth() {
         await updateProfile(credential.user, { displayName })
         
         try {
-          await firebaseSendEmailVerification(credential.user)
+          await firebaseSendEmailVerification(credential.user, authActionCodeSettings)
         } catch (emailError) {
           console.warn('Email verification failed:', emailError)
           // Continue with signup even if email verification fails
@@ -364,7 +374,7 @@ export function useAuth() {
   const sendEmailVerification = useCallback(async () => {
     try {
       if (!auth.currentUser) throw new Error('No authenticated user found.')
-      await firebaseSendEmailVerification(auth.currentUser)
+      await firebaseSendEmailVerification(auth.currentUser, authActionCodeSettings)
       toastSuccess('✓ Verification email sent! Check your inbox.')
     } catch (error) {
       if (error.code === 'auth/too-many-requests') {
@@ -378,7 +388,7 @@ export function useAuth() {
 
   const forgotPassword = useCallback(async (email) => {
     try {
-      await sendPasswordResetEmail(auth, email)
+      await sendPasswordResetEmail(auth, email, authActionCodeSettings)
       toastSuccess('✓ Password reset email sent! Check your inbox.')
     } catch (error) {
       if (error.code === 'auth/user-not-found') {

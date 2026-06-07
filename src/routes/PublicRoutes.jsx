@@ -5,6 +5,9 @@ import { canAccessDashboard } from '../utils/authAccess'
 import AccessDeniedPage from '../pages/auth/AccessDeniedPage'
 import AdminSetupPage from '../pages/auth/AdminSetupPage'
 import ApprovalPendingPage from '../pages/auth/ApprovalPendingPage'
+import AuthActionPage from '../pages/auth/AuthActionPage'
+import EmailVerificationSuccessPage from '../pages/auth/EmailVerificationSuccessPage'
+import PasswordResetSuccessPage from '../pages/auth/PasswordResetSuccessPage'
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage'
 import VerifyEmailPage from '../pages/auth/VerifyEmailPage'
 import LandingPage from '../public/LandingPage'
@@ -89,6 +92,21 @@ export const publicRoutes = [
         <LandingPage authModal="forgot-password" />
       </PublicOnlyRoute>
     }
+  />,
+  <Route
+    key={PUBLIC_ROUTES.authAction}
+    path={PUBLIC_ROUTES.authAction}
+    element={<AuthActionPage />}
+  />,
+  <Route
+    key={PUBLIC_ROUTES.emailVerified}
+    path={PUBLIC_ROUTES.emailVerified}
+    element={<EmailVerificationSuccessPage />}
+  />,
+  <Route
+    key={PUBLIC_ROUTES.passwordResetSuccess}
+    path={PUBLIC_ROUTES.passwordResetSuccess}
+    element={<PasswordResetSuccessPage />}
   />,
   <Route
     key={PUBLIC_ROUTES.resetPassword}

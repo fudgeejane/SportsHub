@@ -20,7 +20,7 @@ function formatSchedule(item) {
   const start = formatDate(item.startDate) || 'TBA'
   const end = formatDate(item.endDate) || 'TBA'
   if (start === end || !item.endDate) return start
-  return `${start} — ${end}`
+  return `${start} to ${end}`
 }
 
 export default function OrganizerEventsPage() {
@@ -72,7 +72,6 @@ export default function OrganizerEventsPage() {
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
               <th className="px-6 py-4 text-left font-semibold">Event</th>
-              <th className="px-6 py-4 text-left font-semibold">Sport</th>
               <th className="px-6 py-4 text-left font-semibold">Fee</th>
               <th className="px-6 py-4 text-left font-semibold">Facilitator</th>
               <th className="px-6 py-4 text-left font-semibold">Schedule</th>
@@ -91,11 +90,11 @@ export default function OrganizerEventsPage() {
                   <p className="font-semibold text-slate-900">
                     {item.name}
                   </p>
+                  <p>
+                      {item.sportName}
+                      </p>
                 </td>
 
-                <td className="px-6 py-4 text-slate-600">
-                  {item.sportName}
-                </td>
 
                 <td className="px-6 py-4 text-slate-600">
                   PHP {item.feePerTeam || 0}
@@ -106,22 +105,6 @@ export default function OrganizerEventsPage() {
 
                 <td className="px-6 py-4 text-slate-600">
                   {formatSchedule(item)}
-                </td>
-
-                <td className="px-6 py-4">
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                      item.status === "OPEN"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : item.status === "CLOSED"
-                        ? "bg-amber-100 text-amber-700"
-                        : item.status === "COMPLETED"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-slate-100 text-slate-700"
-                    }`}
-                  >
-                    {item.status}
-                  </span>
                 </td>
 
                 <td className="px-6 py-4">
@@ -137,8 +120,11 @@ export default function OrganizerEventsPage() {
                     <option>OPEN</option>
                     <option>CLOSED</option>
                     <option>COMPLETED</option>
-                    <option>ARCHIVED</option>
                   </select>
+                </td>
+
+                <td className="px-6 py-4">
+                  
                 </td>
               </tr>
             ))}

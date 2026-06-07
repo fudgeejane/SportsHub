@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { LogOut, Menu, X, Triangle } from 'lucide-react'
+import { BookOpenText, ChevronDown, ChevronUp, LogOut, Menu, Settings, X, Triangle } from 'lucide-react'
 import defaultAvatar from '../../assets/default-avatar.svg'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { getAllowedNav } from '../../routes/navConfig'
@@ -72,7 +72,10 @@ export default function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const sidebarWidth = collapsed ? 'lg:pl-20' : 'lg:pl-72'
+  const sidebarWidth = collapsed ? 'lg:pl-20' : 'lg:pl-64'
+  const fullName = userProfile?.displayName || currentUser?.displayName || 'SportsHub User'
+  const email = currentUser?.email || userProfile?.email || 'No email available'
+  const role = userProfile?.role || 'PLAYER'
 
   const handleLogout = async () => {
     await signOut()
@@ -85,7 +88,7 @@ export default function AppLayout() {
     <div className="app-layout min-h-screen bg-slate-50 text-slate-700">
       <aside
         className={`fixed inset-y-0 left-0 z-40 hidden border-r border-slate-200 bg-white transition-all duration-200 lg:block ${
-          collapsed ? 'w-20' : 'w-72'
+          collapsed ? 'w-20' : 'w-64'
         }`}
       >
         <SidebarContent collapsed={collapsed} onLogout={handleLogout} />
@@ -94,7 +97,7 @@ export default function AppLayout() {
       {mobileOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button className="absolute inset-0 bg-slate-950/40" onClick={() => setMobileOpen(false)} aria-label="Close sidebar overlay" />
-          <aside className="relative h-full w-80 max-w-[86vw] border-r border-slate-200 bg-white shadow-2xl">
+          <aside className="relative h-full w-72 max-w-[86vw] border-r border-slate-200 bg-white shadow-2xl">
             <button
               onClick={() => setMobileOpen(false)}
               className="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white text-slate-600"
@@ -108,7 +111,7 @@ export default function AppLayout() {
       ) : null}
 
       <div className={`flex min-h-screen flex-col transition-all duration-200 ${sidebarWidth}`}>
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-7">
           <div className="flex min-w-0 items-center gap-3">
             <button
               onClick={() => setMobileOpen(true)}
@@ -154,21 +157,48 @@ export default function AppLayout() {
           <div className="relative shrink-0">
             <button
               onClick={() => setUserMenuOpen((current) => !current)}
-              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 transition hover:bg-slate-50 sm:gap-3 sm:px-3"
+              className="relative grid h-10 w-10 place-items-center rounded-full border border-slate-200 bg-white transition hover:bg-slate-50"
+              aria-label="Open user menu"
+              aria-expanded={userMenuOpen}
             >
               <img src={currentUser?.photoURL || defaultAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
-              <span className="hidden max-w-40 truncate text-sm font-semibold text-slate-700 md:inline">{currentUser?.email}</span>
+              <span className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm">
+                {userMenuOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+              </span>
             </button>
 
             {userMenuOpen ? (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
+              <div className="absolute right-0 mt-3 w-72 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl">
                 <div className="rounded-xl bg-slate-50 p-3">
-                  <p className="truncate text-sm font-bold text-slate-950">{userProfile?.displayName || 'SportsHub User'}</p>
-                  <p className="truncate text-xs text-slate-500">{currentUser?.email}</p>
+                  <p className="truncate text-sm font-bold text-slate-950">{fullName}</p>
+                  <p className="truncate text-xs text-slate-500">{email}</p>
+                  <p className="mt-2 text-xs font-black uppercase tracking-wide text-blue-600">{role}</p>
+                </div>
+                <div className="mt-3 grid gap-1">
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      navigate('/settings')
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      navigate('/resources')
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
+                  >
+                    <BookOpenText size={16} />
+                    Resources
+                  </button>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
+                  className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-red-600 transition hover:bg-red-50"
                 >
                   <LogOut size={16} />
                   Logout
@@ -178,7 +208,7 @@ export default function AppLayout() {
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">
+        <main className="flex-1 p-4 ">
           <div className="mx-auto max-w-7xl">
             <Outlet />
           </div>

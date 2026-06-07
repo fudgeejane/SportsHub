@@ -13,14 +13,12 @@ function isSignupTeam(team, sportId) {
 
 export function useAvailableTeams(sportId) {
   const [teams, setTeams] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(Boolean(sportId))
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (!sportId) {
-      setTeams([])
-      setLoading(false)
-      setError('')
+      // No need to update state here - it's handled by initial state
       return undefined
     }
 

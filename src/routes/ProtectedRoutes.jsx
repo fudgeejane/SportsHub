@@ -21,7 +21,6 @@ import OrganizerFacilitatorsPage from '../pages/Organizer/Facilitators'
 import OrganizerRequestsPage from '../pages/Organizer/Requests'
 import OrganizerSchedulePage from '../pages/Organizer/Schedule'
 import OrganizerSchedulesPage from '../pages/Organizer/Schedules'
-import OrganizerSettingsPage from '../pages/Organizer/Settings'
 import OrganizerSportsPage from '../pages/Organizer/Sports'
 import OrganizerTeamsPage from '../pages/Organizer/Teams'
 import OrganizerUsersPage from '../pages/Organizer/Users'
@@ -31,6 +30,8 @@ import PlayerProfilePage from '../pages/Player/Profile'
 import PlayerRequestsPage from '../pages/Player/Requests'
 import PlayerSchedulesPage from '../pages/Player/Schedules'
 import PlayerTeamsPage from '../pages/Player/Teams'
+import ResourcesPage from '../pages/Resources'
+import SettingsPage from '../pages/Settings'
 import { getDashboardPath } from './navConfig'
 import { PUBLIC_ROUTES } from './public-routes'
 
@@ -179,16 +180,9 @@ export const protectedRoutes = [
     <Route path="/facilitators" element={<RoleRoute views={roleView({ [ROLES.ADMIN]: OrganizerFacilitatorsPage, [ROLES.COMMUNITY_ORGANIZER]: OrganizerFacilitatorsPage })} />} />
     <Route
       path="/settings"
-      element={
-        <RoleRoute
-          views={roleView({
-            [ROLES.ADMIN]: OrganizerSettingsPage,
-            [ROLES.COMMUNITY_ORGANIZER]: OrganizerSettingsPage,
-            [ROLES.PLAYER]: PlayerProfilePage,
-          })}
-        />
-      }
+      element={<SettingsPage />}
     />
+    <Route path="/resources" element={<ResourcesPage />} />
     <Route
       path="/schedule"
       element={
