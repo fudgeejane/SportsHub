@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Search, Users } from 'lucide-react'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useSportManagement } from '../../hooks/useSportManagement'
 
 export default function OrganizerTeamsPage() {
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const [currentPage, setCurrentPage] = useState(0)
   const [selectedTeamId, setSelectedTeamId] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')

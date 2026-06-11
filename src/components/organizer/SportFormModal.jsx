@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { emptyTeamStructure, normalizeTeamStructure } from '../../constants/teamStructure'
+import { emptyTeamStructure, normalizeTeamStructure } from '../../hooks/useSportManagement'
 
 function inputClass() {
   return 'px-4 py-2 border rounded-lg border-slate-200 bg-gray-50 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'

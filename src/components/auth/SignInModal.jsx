@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { STATUSES } from '../../contexts/AuthContext'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { useAuth } from '../../hooks/useAuth'
 import { isFirebaseConfigComplete } from '../../firebase'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
 import AuthDialog from './AuthDialog'

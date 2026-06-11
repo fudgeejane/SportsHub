@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { ROLES } from '../contexts/AuthContext'
-import { SKILL_LEVELS } from '../constants/skillLevel'
-import { useAvailableSports } from './useAvailableSports'
-import { useAvailableTeams } from './useAvailableTeams'
+import { SKILL_LEVELS } from '../utils/skillBalancing'
+import { useSportManagement } from './useSportManagement'
+import { useAvailableTeams } from './useTeamManagement'
 
 export function useSignup(form) {
   const isPlayer = form.role === ROLES.PLAYER
-  const { sports, loading: sportsLoading, error: sportsError } = useAvailableSports()
+  const { sports, loading: sportsLoading, error: sportsError } = useSportManagement()
   const { teams, loading: teamsLoading, error: teamsError } = useAvailableTeams(form.preferredSportId)
 
   const selectedSport = useMemo(

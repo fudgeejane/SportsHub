@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { useAuth } from '../../hooks/useAuth'
 import { usePayment } from '../../hooks/usePayment'
-import { useRegistration } from '../../hooks/useRegistration'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useRegistration } from '../../hooks/useRegistrationManagement'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 
 function eventIsIncoming(value) {
@@ -20,7 +20,7 @@ function teamAppearsInMatch(match, teamIds) {
 
 export default function CoachDashboard() {
   const { currentUser } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const registration = useRegistration()
   const payments = usePayment()
 

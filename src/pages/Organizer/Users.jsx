@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ROLES, STATUSES } from '../../contexts/AuthContext'
-import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
+import { useAuth, useUserManagement } from '../../hooks/useAuth'
 import { Search, ChevronRight, ChevronLeft, Pencil, Trash2, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 
 const roleOptions = [ROLES.COMMUNITY_ORGANIZER, ROLES.COACH, ROLES.FACILITATOR, ROLES.PLAYER]

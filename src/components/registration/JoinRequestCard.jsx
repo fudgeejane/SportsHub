@@ -1,5 +1,4 @@
-import { JOIN_REQUEST_STATUS } from '../../utils/joinRequests'
-import { SIGNUP_STATUS } from '../../constants/registration'
+import { JOIN_REQUEST_STATUS, SIGNUP_STATUS } from '../../utils/joinRequests'
 
 export default function JoinRequestCard({ request, skillLevel, onAccept, onReject, readOnly = false }) {
   const pending = request.status === JOIN_REQUEST_STATUS.PENDING

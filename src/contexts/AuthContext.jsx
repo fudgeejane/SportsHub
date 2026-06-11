@@ -5,17 +5,33 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 
 export const ROLES = {
-  ADMIN: 'ADMIN',
-  COMMUNITY_ORGANIZER: 'COMMUNITY_ORGANIZER',
-  COACH: 'COACH',
-  FACILITATOR: 'FACILITATOR',
-  PLAYER: 'PLAYER',
+  ORGANIZER: 'organizer',
+  COMMUNITY_ORGANIZER: 'organizer',
+  ADMIN: 'organizer',
+  COACH: 'coach',
+  FACILITATOR: 'facilitator',
+  PLAYER: 'player',
 }
 
 export const STATUSES = {
-  PENDING: 'PENDING',
-  APPROVED: 'APPROVED',
-  REJECTED: 'REJECTED',
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+}
+
+export function normalizeRole(role) {
+  const value = String(role || '').toLowerCase()
+  if (value === 'community_organizer' || value === 'admin') return ROLES.ORGANIZER
+  if (value === 'coach') return ROLES.COACH
+  if (value === 'facilitator') return ROLES.FACILITATOR
+  if (value === 'player') return ROLES.PLAYER
+  return value || null
+}
+
+export function normalizeStatus(status) {
+  const value = String(status || '').toLowerCase()
+  if (value === 'active') return STATUSES.APPROVED
+  return value || null
 }
 
 export const AuthContext = createContext(null)
@@ -24,7 +40,6 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null)
   const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [authError, setAuthError] = useState('')
   const hasInitialized = useRef(false)
 
   useEffect(() => {
@@ -32,10 +47,7 @@ export function AuthProvider({ children }) {
 
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       unsubscribeProfile()
-      if (!hasInitialized.current) {
-        setLoading(true)
-      }
-      setAuthError('')
+      if (!hasInitialized.current) setLoading(true)
       setCurrentUser(firebaseUser)
 
       if (!firebaseUser) {
@@ -48,17 +60,21 @@ export function AuthProvider({ children }) {
       unsubscribeProfile = onSnapshot(
         doc(db, 'users', firebaseUser.uid),
         (snapshot) => {
-          setUserProfile(snapshot.exists() ? snapshot.data() : null)
+          const profile = snapshot.exists() ? snapshot.data() : null
+          setUserProfile(
+            profile
+              ? {
+                  ...profile,
+                  role: normalizeRole(profile.role),
+                  status: normalizeStatus(profile.status),
+                  approvalStatus: normalizeStatus(profile.approvalStatus),
+                }
+              : null,
+          )
           setLoading(false)
           hasInitialized.current = true
         },
-        (error) => {
-          // Handle browser blocking Firestore connections
-          const errorMessage = error.code === 'unavailable' || error.message?.includes('ERR_BLOCKED_BY_CLIENT')
-            ? 'Connection blocked by browser. Please disable ad blockers, privacy extensions, or firewall restrictions to access Firestore.'
-            : error.message
-          
-          setAuthError(errorMessage)
+        () => {
           setUserProfile(null)
           setLoading(false)
           hasInitialized.current = true
@@ -72,21 +88,20 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const role = userProfile?.role || null
+
   const value = useMemo(
     () => ({
       currentUser,
-      user: currentUser,
       userProfile,
-      profile: userProfile,
-      role: userProfile?.role || null,
-      currentUserName: userProfile?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '',
-      currentUserRole: userProfile?.role || '',
-      currentUserStatus: userProfile?.status || '',
-      isEmailVerified: Boolean(currentUser?.emailVerified || userProfile?.emailVerified),
+      role,
       loading,
-      authError,
+      isOrganizer: role === ROLES.ORGANIZER,
+      isCoach: role === ROLES.COACH,
+      isFacilitator: role === ROLES.FACILITATOR,
+      isPlayer: role === ROLES.PLAYER,
     }),
-    [authError, currentUser, loading, userProfile],
+    [currentUser, loading, role, userProfile],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -17,19 +17,27 @@ import {
 import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 import { app } from '../firebase'
-import { MEMBERSHIP_STATUS } from '../constants/membership'
 import { toastError, toastSuccess } from '../utils/toast'
-import { AuthContext, ROLES, STATUSES } from '../contexts/AuthContext.jsx'
+import { AuthContext, ROLES, STATUSES, normalizeRole, normalizeStatus } from '../contexts/AuthContext.jsx'
 import { auth, db, googleProvider } from '../firebase'
 import { createPendingJoinRequest } from '../utils/joinRequests'
-import { useGlobalLoading } from './useGlobalLoading.jsx'
+import { useGlobalLoading } from '../components/loading/Loading'
 
 export { AuthContext, ROLES, STATUSES }
 
-export const APP_RETURN_URL = 'https://sports-hub-khaki.vercel.app'
+export const APP_RETURN_URL = 'https://sports-hub-khaki.vercel.app/'
 export const FIREBASE_AUTH_ACTION_URL = 'https://sportshub-ffba8.firebaseapp.com/__/auth/action'
 
-// ActionCodeSettings for email verification and password reset
+export const MEMBERSHIP_STATUS = {
+  PENDING_COACH_APPROVAL: 'PENDING_COACH_APPROVAL',
+  PENDING_TEAM_ASSIGNMENT: 'PENDING_TEAM_ASSIGNMENT',
+  TEAM_ASSIGNED: 'TEAM_ASSIGNED',
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
+  PENDING_PAYMENT_APPROVAL: 'PENDING_PAYMENT_APPROVAL',
+  ACTIVE: 'ACTIVE',
+  REJECTED: 'REJECTED',
+}
+
 export const authActionCodeSettings = {
   url: APP_RETURN_URL,
   handleCodeInApp: false,
@@ -69,7 +77,14 @@ export function buildUserRecord(firebaseUser, role = ROLES.PLAYER, displayName =
 export async function getUserProfile(uid) {
   if (!uid) return null
   const snapshot = await getDoc(doc(db, 'users', uid))
-  return snapshot.exists() ? snapshot.data() : null
+  if (!snapshot.exists()) return null
+  const profile = snapshot.data()
+  return {
+    ...profile,
+    role: normalizeRole(profile.role),
+    status: normalizeStatus(profile.status),
+    approvalStatus: normalizeStatus(profile.approvalStatus),
+  }
 }
 
 export async function createUserRecord(firebaseUser, role, displayName, overrides = {}) {
@@ -89,7 +104,7 @@ export async function updateUserRecord(uid, updates) {
   await updateDoc(doc(db, 'users', uid), updates)
 }
 
-export async function createAdminUser({ email, password, displayName, role = ROLES.COMMUNITY_ORGANIZER }) {
+export async function createAdminUser({ email, password, displayName, role = ROLES.ORGANIZER }) {
   const credential = await createUserWithEmailAndPassword(auth, email, password)
   await updateProfile(credential.user, { displayName })
   await createUserRecord(credential.user, role, displayName, {
@@ -119,6 +134,9 @@ export function useUserManagement(reviewerId) {
             id: userDoc.id,
             uid: userDoc.data()?.uid || userDoc.id,
             ...userDoc.data(),
+            role: normalizeRole(userDoc.data()?.role),
+            status: normalizeStatus(userDoc.data()?.status),
+            approvalStatus: normalizeStatus(userDoc.data()?.approvalStatus),
           })),
         )
         setLoading(false)
@@ -149,44 +167,41 @@ export function useUserManagement(reviewerId) {
     [startLoading],
   )
 
-    const deleteUser = useCallback(
-      async (uid) => {
-        setError('')
-        const stopGlobalLoading = startLoading('Deleting user...')
+  const deleteUser = useCallback(
+    async (uid) => {
+      setError('')
+      const stopGlobalLoading = startLoading('Deleting user...')
+      try {
+        await deleteDoc(doc(db, 'users', uid))
+        toastSuccess('User removed from Firestore.')
         try {
-          await deleteDoc(doc(db, 'users', uid))
-          toastSuccess('User removed from Firestore.')
-          // Try callable Cloud Function to remove user from Firebase Auth (requires admin privileges)
-          try {
-            const functions = getFunctions(app)
-            const del = httpsCallable(functions, 'deleteUser')
-            await del({ uid })
-            toastSuccess('User removed from Firebase Authentication (via Cloud Function).')
-          } catch (fnError) {
-            // If callable not available or failed, attempt to delete auth record only if it's the current user
-            if (auth.currentUser && auth.currentUser.uid === uid) {
-              try {
-                await firebaseDeleteUser(auth.currentUser)
-                toastSuccess('User removed from Firebase Authentication.')
-                await firebaseSignOut(auth)
-              } catch (authDeleteError) {
-                toastError(`Deleted Firestore record but failed to remove from Auth: ${authDeleteError.message}`)
-              }
-            } else {
-              // Non-current-user Auth deletion requires backend admin privileges; inform the admin
-              console.warn('Callable deleteUser failed or not available:', fnError?.message || fnError)
+          const functions = getFunctions(app)
+          const del = httpsCallable(functions, 'deleteUser')
+          await del({ uid })
+          toastSuccess('User removed from Firebase Authentication.')
+        } catch (fnError) {
+          if (auth.currentUser && auth.currentUser.uid === uid) {
+            try {
+              await firebaseDeleteUser(auth.currentUser)
+              toastSuccess('User removed from Firebase Authentication.')
+              await firebaseSignOut(auth)
+            } catch (authDeleteError) {
+              toastError(`Deleted Firestore record but failed to remove from Auth: ${authDeleteError.message}`)
             }
+          } else {
+            console.warn('Callable deleteUser failed or not available:', fnError?.message || fnError)
           }
-        } catch (deleteError) {
-          setError(deleteError.message)
-          toastError(`Failed to delete user: ${deleteError.message}`)
-          throw deleteError
-        } finally {
-          stopGlobalLoading()
         }
-      },
-      [startLoading],
-    )
+      } catch (deleteError) {
+        setError(deleteError.message)
+        toastError(`Failed to delete user: ${deleteError.message}`)
+        throw deleteError
+      } finally {
+        stopGlobalLoading()
+      }
+    },
+    [startLoading],
+  )
 
   const approveUser = useCallback(
     (uid) =>
@@ -477,6 +492,42 @@ export function useAuth() {
     }
   }, [])
 
+  const updateOwnProfile = useCallback(
+    (updates) => {
+      if (!context.currentUser?.uid) throw new Error('No authenticated user found.')
+      return updateUser(context.currentUser.uid, {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      })
+    },
+    [context.currentUser, updateUser],
+  )
+
+  const reviewUser = useCallback(
+    async (uid, nextStatus, expectedRole) => {
+      if (!context.isOrganizer) throw new Error('Only organizers can approve or reject users.')
+      const profile = await getUserProfile(uid)
+      if (!profile) throw new Error('User profile was not found.')
+      if (expectedRole && profile.role !== expectedRole) throw new Error(`Expected a ${expectedRole} profile.`)
+
+      await updateUserRecord(uid, {
+        status: nextStatus,
+        approvalStatus: nextStatus,
+        approvedBy: context.currentUser.uid,
+        approvedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      })
+    },
+    [context.currentUser, context.isOrganizer],
+  )
+
+  const approveCoach = useCallback((uid) => reviewUser(uid, STATUSES.APPROVED, ROLES.COACH), [reviewUser])
+  const rejectCoach = useCallback((uid) => reviewUser(uid, STATUSES.REJECTED, ROLES.COACH), [reviewUser])
+  const approveFacilitator = useCallback((uid) => reviewUser(uid, STATUSES.APPROVED, ROLES.FACILITATOR), [reviewUser])
+  const rejectFacilitator = useCallback((uid) => reviewUser(uid, STATUSES.REJECTED, ROLES.FACILITATOR), [reviewUser])
+  const approvePlayer = useCallback((uid) => reviewUser(uid, STATUSES.APPROVED, ROLES.PLAYER), [reviewUser])
+  const rejectPlayer = useCallback((uid) => reviewUser(uid, STATUSES.REJECTED, ROLES.PLAYER), [reviewUser])
+
   return useMemo(
     () => ({
       ...context,
@@ -491,18 +542,33 @@ export function useAuth() {
       checkUserStatus,
       refreshUser,
       updateUser,
+      updateOwnProfile,
+      updateProfile: updateOwnProfile,
+      approveCoach,
+      rejectCoach,
+      approveFacilitator,
+      rejectFacilitator,
+      approvePlayer,
+      rejectPlayer,
     }),
     [
+      approveCoach,
+      approveFacilitator,
+      approvePlayer,
       checkUserStatus,
       context,
       forgotPassword,
       refreshUser,
+      rejectCoach,
+      rejectFacilitator,
+      rejectPlayer,
       resetPassword,
       sendEmailVerification,
       signIn,
       signInWithGoogle,
       signOut,
       signUp,
+      updateOwnProfile,
       updateUser,
       verifyEmailWithCode,
     ],

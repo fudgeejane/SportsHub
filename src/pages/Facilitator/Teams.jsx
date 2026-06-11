@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Search, Filter, Users, Trophy } from 'lucide-react'
-import { useAuth } from '../../hooks/useAuth.jsx'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useAuth } from '../../hooks/useAuth'
+import { useSportManagement } from '../../hooks/useSportManagement'
 
 export default function FacilitatorTeamsPage() {
   const { currentUser } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const [searchQuery, setSearchQuery] = useState('')
   const [sportFilter, setSportFilter] = useState('')
   const [eventFilter, setEventFilter] = useState('')

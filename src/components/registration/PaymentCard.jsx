@@ -1,4 +1,4 @@
-import { PAYMENT_METHOD_LABELS, PAYMENT_STATUS } from '../../constants/registration'
+import { PAYMENT_METHOD_LABELS, PAYMENT_STATUS } from '../../hooks/usePayment'
 
 export default function PaymentCard({ payment, onApprove, onReject, canReview }) {
   const pending = payment.paymentStatus === PAYMENT_STATUS.PENDING

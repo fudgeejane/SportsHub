@@ -6,10 +6,6 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isSelf(uid) {
-      return signedIn() && request.auth.uid == uid;
-    }
-
     function userPath(uid) {
       return /databases/$(database)/documents/users/$(uid);
     }
@@ -19,75 +15,39 @@ service cloud.firestore {
     }
 
     function currentUser() {
-      return hasUserDoc() ? get(userPath(request.auth.uid)).data : null;
+      return get(userPath(request.auth.uid)).data;
     }
 
-    function registered() {
-      return hasUserDoc();
+    function roleIs(values) {
+      return hasUserDoc() && currentUser().role in values;
     }
 
-    function registeredRole(role) {
-      return hasUserDoc() && currentUser() != null && currentUser().role == role;
+    function statusIsApproved() {
+      return hasUserDoc() && currentUser().status in ['approved', 'APPROVED'];
     }
 
-    function registeredPlayer() {
-      return registeredRole('PLAYER');
-    }
-
-    function approved() {
-      return hasUserDoc()
-        && currentUser() != null
-        && currentUser().status == 'APPROVED'
-        && (
-          (request.auth.token.email_verified != null && request.auth.token.email_verified == true)
-          || ('emailVerified' in currentUser() && currentUser().emailVerified == true)
-          || currentUser().role == 'COMMUNITY_ORGANIZER'
-        );
-    }
-
-    function hasRole(roles) {
-      return approved() && currentUser() != null && currentUser().role in roles;
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
     }
 
     function isOrganizer() {
-      return hasRole(['COMMUNITY_ORGANIZER', 'ADMIN']);
+      return statusIsApproved() && roleIs(['organizer', 'COMMUNITY_ORGANIZER', 'ADMIN']);
     }
 
     function isCoach() {
-      return hasRole(['COACH']);
+      return statusIsApproved() && roleIs(['coach', 'COACH']);
     }
 
     function isFacilitator() {
-      return hasRole(['FACILITATOR']);
+      return statusIsApproved() && roleIs(['facilitator', 'FACILITATOR']);
     }
 
-    function readOnlySportsAccess() {
-      return signedIn() && (isOrganizer() || isCoach() || registeredPlayer() || isFacilitator());
+    function isPlayer() {
+      return statusIsApproved() && roleIs(['player', 'PLAYER']);
     }
 
-    function teamDoc(teamId) {
-      return get(/databases/$(database)/documents/teams/$(teamId)).data;
-    }
-
-    function eventDoc(eventId) {
-      return get(/databases/$(database)/documents/events/$(eventId)).data;
-    }
-
-    function sportDoc(sportId) {
-      return get(/databases/$(database)/documents/sports/$(sportId)).data;
-    }
-
-    function validJoinTeam(teamId, coachId, sportId) {
-      return teamId is string
-        && coachId is string
-        && sportId is string
-        && exists(/databases/$(database)/documents/teams/$(teamId))
-        && teamDoc(teamId).status == 'ACTIVE'
-        && teamDoc(teamId).coachId == coachId
-        && teamDoc(teamId).sportId == sportId
-        && exists(/databases/$(database)/documents/sports/$(sportId))
-        && sportDoc(sportId).status == 'ACTIVE'
-        && sportDoc(sportId).createdBy != null;
+    function isApprovedUser() {
+      return isOrganizer() || isCoach() || isFacilitator() || isPlayer();
     }
 
     function selfProfileFieldsOnly() {
@@ -101,416 +61,160 @@ service cloud.firestore {
         'preferredSportTeamStructure',
         'skillLevel',
         'emailVerified',
-        'updatedAt',
+        'updatedAt'
       ]);
     }
 
-    function selfJoinApplicationOnly() {
+    function organizerApprovalOnly() {
       return request.resource.data.diff(resource.data).changedKeys().hasOnly([
+        'role',
         'status',
         'approvalStatus',
-        'requestedTeamId',
-        'requestedTeamName',
-        'preferredSport',
-        'preferredSportId',
-        'membershipStatus',
-        'signupStatus',
-        'updatedAt',
-      ])
-      && resource.data.role == 'PLAYER'
-      && resource.data.status == 'REJECTED'
-      && request.resource.data.status == 'PENDING'
-      && request.resource.data.approvalStatus == 'PENDING'
-      && request.resource.data.membershipStatus == 'PENDING_COACH_APPROVAL'
-      && request.resource.data.signupStatus == 'pending';
-    }
-
-    function selfPaymentSubmitOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'paymentStatus',
-        'paymentMethod',
-        'paymentProof',
-        'updatedAt',
-      ]) && request.resource.data.paymentStatus == 'pending';
-    }
-
-    function coachSignupApprovalOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'status',
-        'approvalStatus',
-        'signupStatus',
-        'membershipStatus',
-        'paymentStatus',
-        'assignedTeamId',
-        'assignedTeamName',
         'approvedBy',
         'approvedAt',
-        'updatedAt',
+        'updatedAt'
       ])
-      && request.resource.data.role == resource.data.role
-      && request.resource.data.signupStatus in ['approved', 'rejected']
-      && (
-        (request.resource.data.signupStatus == 'approved'
-          && request.resource.data.status == 'APPROVED'
-          && request.resource.data.approvalStatus == 'APPROVED'
-          && request.resource.data.membershipStatus == 'ACTIVE')
-        || (request.resource.data.signupStatus == 'rejected'
-          && request.resource.data.status == 'REJECTED'
-          && request.resource.data.approvalStatus == 'REJECTED')
-      );
+      && request.resource.data.role in ['organizer', 'coach', 'facilitator', 'player', 'COMMUNITY_ORGANIZER', 'ADMIN', 'COACH', 'FACILITATOR', 'PLAYER']
+      && request.resource.data.status in ['pending', 'approved', 'rejected', 'PENDING', 'APPROVED', 'REJECTED'];
     }
 
-    function coachJoinRequestReviewOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'status',
-        'signupStatus',
-        'reviewedAt',
-        'reviewedBy',
-        'updatedAt',
-      ])
-      && request.resource.data.coachId == resource.data.coachId
-      && request.resource.data.playerId == resource.data.playerId
-      && request.resource.data.teamId == resource.data.teamId
-      && request.resource.data.status in ['ACCEPTED', 'REJECTED']
-      && request.resource.data.signupStatus in ['approved', 'rejected'];
+    function activeOrApproved(value) {
+      return value in ['active', 'approved', 'ACTIVE', 'APPROVED'];
     }
 
-    function facilitatorPaymentReviewOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'status',
-        'paymentStatus',
-        'reviewedAt',
-        'reviewedBy',
-        'updatedAt',
-      ])
-      && request.resource.data.paymentStatus in ['approved', 'rejected']
-      && (!request.resource.data.diff(resource.data).changedKeys().hasAny(['status']) || request.resource.data.status in ['APPROVED', 'REJECTED']);
+    function teamDoc(teamId) {
+      return get(/databases/$(database)/documents/teams/$(teamId)).data;
     }
 
-    function validScheduleArray() {
-      return !('schedule' in request.resource.data)
-        || (
-          request.resource.data.schedule is list
-          && (
-            request.resource.data.schedule.size() == 0
-            || request.resource.data.schedule[0].gameNumber is number
-          )
-        )
+    function eventDoc(eventId) {
+      return get(/databases/$(database)/documents/events/$(eventId)).data;
     }
 
-    function facilitatorScheduleOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'schedule',
-        'bracketGeneratedAt',
-        'updatedAt',
-      ])
-      && resource.data.facilitatorId == request.auth.uid
-      && validScheduleArray();
-    }
-
-    function coachFeeUpdateOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'fee',
-        'updatedAt',
-      ]) && request.resource.data.fee is number && request.resource.data.fee >= 0;
-    }
-
-    function coachTeamRegistrationUpdateOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'name',
-        'sportId',
-        'sportName',
-        'eventId',
-        'eventName',
-        'eventFacilitatorId',
-        'minPlayers',
-        'maxPlayers',
-        'fee',
-        'paymentMethod',
-        'paymentProof',
-        'status',
-        'eventParticipationStatus',
-        'updatedAt',
-      ])
-      && request.resource.data.coachId == resource.data.coachId
-      && request.resource.data.paymentMethod in ['cash', 'gcash', 'bank_transfer']
-      && request.resource.data.paymentProof is string
-      && request.resource.data.paymentProof.size() > 0
-      && request.resource.data.status in ['ACTIVE', 'ARCHIVED']
-      && request.resource.data.eventParticipationStatus in ['PENDING', 'CANCELLED'];
-    }
-
-    function coachBaseTeamUpdateOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'name',
-        'sportId',
-        'sportName',
-        'coachName',
-        'minPlayers',
-        'maxPlayers',
-        'status',
-        'updatedAt',
-      ])
-      && request.resource.data.coachId == resource.data.coachId
-      && request.resource.data.status in ['ACTIVE', 'ARCHIVED'];
-    }
-
-    function coachRelatedRegistrationUpdateOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'eventId',
-        'eventName',
-        'sportId',
-        'sportName',
-        'teamId',
-        'teamName',
-        'facilitatorId',
-        'amount',
-        'paymentMethod',
-        'paymentProof',
-        'status',
-        'updatedAt',
-      ])
-      && request.resource.data.coachId == resource.data.coachId
-      && request.resource.data.paymentMethod in ['cash', 'gcash', 'bank_transfer']
-      && request.resource.data.paymentProof is string
-      && request.resource.data.paymentProof.size() > 0
-      && request.resource.data.status in ['PENDING', 'CANCELLED'];
-    }
-
-    function coachRelatedRegistrationCancelOnly() {
-      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
-        'status',
-        'updatedAt',
-      ])
-      && request.resource.data.coachId == resource.data.coachId
-      && request.resource.data.status == 'CANCELLED';
+    function assignedToEvent(data) {
+      return data.facilitatorId == request.auth.uid
+        || (data.facilitatorIds is list && request.auth.uid in data.facilitatorIds);
     }
 
     match /users/{uid} {
-      allow create: if signedIn() 
-        && request.auth.uid == uid
+      allow create: if isSelf(uid)
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.email == request.auth.token.email
-        && request.resource.data.status in ['PENDING', 'APPROVED']
-        && request.resource.data.role in ['COMMUNITY_ORGANIZER', 'COACH', 'FACILITATOR', 'PLAYER'];
+        && request.resource.data.role in ['organizer', 'coach', 'facilitator', 'player', 'COMMUNITY_ORGANIZER', 'ADMIN', 'COACH', 'FACILITATOR', 'PLAYER']
+        && request.resource.data.status in ['pending', 'approved', 'rejected', 'PENDING', 'APPROVED', 'REJECTED'];
 
-      allow read: if isSelf(uid);
-      allow read: if signedIn() && (isOrganizer() || isFacilitator() || isCoach());
+      allow read: if isSelf(uid) || isOrganizer() || isCoach() || isFacilitator();
 
       allow update: if isSelf(uid)
         && request.resource.data.role == resource.data.role
-        && (
-          (request.resource.data.status == resource.data.status && (selfProfileFieldsOnly() || selfPaymentSubmitOnly()))
-          || selfJoinApplicationOnly()
-        );
+        && request.resource.data.status == resource.data.status
+        && selfProfileFieldsOnly();
 
-      allow update: if isOrganizer()
-        && request.resource.data.role in ['ADMIN', 'COMMUNITY_ORGANIZER', 'COACH', 'FACILITATOR', 'PLAYER']
-        && request.resource.data.status in ['PENDING', 'APPROVED', 'REJECTED']
-        && (!('approvalStatus' in request.resource.data) || request.resource.data.approvalStatus in ['PENDING', 'APPROVED', 'REJECTED']);
-
-      allow update: if isCoach()
-        && resource.data.role == 'PLAYER'
-        && teamDoc(resource.data.requestedTeamId).coachId == request.auth.uid
-        && coachSignupApprovalOnly();
-
-      allow delete: if false;
+      allow update: if isOrganizer() && organizerApprovalOnly();
+      allow delete: if isOrganizer();
     }
 
     match /sports/{sportId} {
-      // Allow anyone to read active sports (needed for signup page)
-      allow read: if resource == null || resource.data.status == 'ACTIVE';
-      // Allow signed-in users to read all sports
-      allow read: if signedIn();
-      
-      allow create: if isOrganizer()
-        && request.resource.data.createdBy == request.auth.uid
-        && (request.resource.data.teamStructure is map || request.resource.data.teamStructure == null)
-        && request.resource.data.status in ['ACTIVE', 'ARCHIVED'];
-      allow update, delete: if isOrganizer();
-    }
-
-    match /events/{eventId} {
-      allow read: if readOnlySportsAccess() || registered();
-      allow delete: if isOrganizer();
-      allow create: if isOrganizer()
-        && request.resource.data.feePerTeam is number
-        && request.resource.data.feePerTeam >= 0
-        && request.resource.data.facilitatorId is string
-        && request.resource.data.facilitatorId.size() > 0;
-      allow update: if isOrganizer() || (isFacilitator() && facilitatorScheduleOnly());
+      allow read: if activeOrApproved(resource.data.status) || isApprovedUser();
+      allow create, update, delete: if isOrganizer();
     }
 
     match /teams/{teamId} {
-      allow read: if readOnlySportsAccess();
-      allow read: if resource != null && resource.data.status == 'ACTIVE';
+      allow read: if isApprovedUser() || activeOrApproved(resource.data.status);
 
       allow create: if isOrganizer()
         || (isCoach()
           && request.resource.data.coachId == request.auth.uid
-          && request.resource.data.status == 'ACTIVE'
           && request.resource.data.sportId is string
-          && request.resource.data.sportId.size() > 0
-          && request.resource.data.eventId == ''
-          && request.resource.data.eventName == ''
-          && request.resource.data.paymentStatus == ''
-          && request.resource.data.eventParticipationStatus == '');
+          && request.resource.data.sportId.size() > 0);
 
       allow update: if isOrganizer()
         || (isCoach()
           && resource.data.coachId == request.auth.uid
-          && request.resource.data.coachId == request.auth.uid
-          && (coachFeeUpdateOnly()
-            || request.resource.data.diff(resource.data).changedKeys().hasOnly(['aggregatedTeamSkill', 'updatedAt'])
-            || request.resource.data.diff(resource.data).changedKeys().hasOnly(['paymentStatus', 'updatedAt'])
-            || coachBaseTeamUpdateOnly()
-            || coachTeamRegistrationUpdateOnly()));
-
-      allow update: if isFacilitator()
-        && resource.data.eventFacilitatorId == request.auth.uid
-        && request.resource.data.diff(resource.data).changedKeys().hasOnly(['paymentStatus', 'eventParticipationStatus', 'updatedAt'])
-        && request.resource.data.paymentStatus in ['approved', 'rejected'];
+          && request.resource.data.coachId == request.auth.uid);
 
       allow delete: if isOrganizer();
     }
 
-    match /teamMembers/{memberId} {
-      allow read: if readOnlySportsAccess() || registered();
+    match /events/{eventId} {
+      allow read: if isApprovedUser();
+      allow create, delete: if isOrganizer();
+      allow update: if isOrganizer()
+        || (isFacilitator()
+          && assignedToEvent(resource.data)
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+            'schedule',
+            'status',
+            'updatedAt'
+          ]));
+    }
 
-      allow create: if isOrganizer()
-        || (isCoach()
-          && request.resource.data.coachId == request.auth.uid
-          && teamDoc(request.resource.data.teamId).coachId == request.auth.uid);
+    match /eventSchedules/{scheduleId} {
+      allow read: if isApprovedUser();
+      allow create, update, delete: if isOrganizer();
+      allow update: if isFacilitator() && resource.data.facilitatorId == request.auth.uid;
+    }
 
-      allow update, delete: if isOrganizer()
+    match /registrations/{registrationId} {
+      allow read: if isOrganizer()
+        || (isCoach() && resource.data.coachId == request.auth.uid)
+        || (isFacilitator() && resource.data.facilitatorId == request.auth.uid);
+
+      allow create: if isCoach()
+        && request.resource.data.coachId == request.auth.uid
+        && request.resource.data.teamId is string
+        && teamDoc(request.resource.data.teamId).coachId == request.auth.uid;
+
+      allow update: if isOrganizer()
         || (isCoach()
           && resource.data.coachId == request.auth.uid
-          && teamDoc(resource.data.teamId).coachId == request.auth.uid
-          && request.resource.data.coachId == request.auth.uid
-          && teamDoc(request.resource.data.teamId).coachId == request.auth.uid);
+          && request.resource.data.coachId == request.auth.uid)
+        || (isFacilitator()
+          && resource.data.facilitatorId == request.auth.uid
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+            'status',
+            'paymentStatus',
+            'reviewedAt',
+            'reviewedBy',
+            'updatedAt'
+          ]));
+
+      allow delete: if isOrganizer();
+    }
+
+    match /notifications/{notificationId} {
+      allow read, update: if signedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isOrganizer() || isCoach() || isFacilitator();
+      allow delete: if isOrganizer() || (signedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // Temporary compatibility collections used by older screens during migration.
+    match /teamMembers/{memberId} {
+      allow read: if isApprovedUser();
+      allow create, update, delete: if isOrganizer()
+        || (isCoach()
+          && request.resource.data.coachId == request.auth.uid);
     }
 
     match /playerApplications/{applicationId} {
       allow read: if isOrganizer()
         || (isCoach() && resource.data.coachId == request.auth.uid)
-        || (registeredPlayer() && resource.data.playerId == request.auth.uid);
-
-      allow create: if registeredPlayer()
-        && request.resource.data.playerId == request.auth.uid
-        && request.resource.data.status == 'PENDING'
-        && request.resource.data.signupStatus == 'pending'
-        && validJoinTeam(
-          request.resource.data.teamId,
-          request.resource.data.coachId,
-          request.resource.data.sportId
-        );
-
-      allow update: if isOrganizer() && coachJoinRequestReviewOnly();
-
-      allow update: if isCoach()
-        && resource.data.coachId == request.auth.uid
-        && coachJoinRequestReviewOnly();
-
-      allow delete: if isOrganizer()
-        || (registeredPlayer()
-          && resource.data.playerId == request.auth.uid
-          && resource.data.status == 'PENDING');
-    }
-
-    match /teamJoinRequests/{requestId} {
-      allow read: if isOrganizer()
+        || (signedIn() && resource.data.playerId == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.playerId == request.auth.uid;
+      allow update, delete: if isOrganizer()
         || (isCoach() && resource.data.coachId == request.auth.uid)
-        || (registeredPlayer() && resource.data.playerId == request.auth.uid);
-
-      allow create: if registeredPlayer()
-        && request.resource.data.playerId == request.auth.uid
-        && request.resource.data.status == 'PENDING'
-        && request.resource.data.signupStatus == 'pending'
-        && validJoinTeam(
-          request.resource.data.teamId,
-          request.resource.data.coachId,
-          request.resource.data.sportId
-        );
-
-      allow update: if isOrganizer() && coachJoinRequestReviewOnly();
-
-      allow update: if isCoach()
-        && resource.data.coachId == request.auth.uid
-        && coachJoinRequestReviewOnly();
-
-      allow delete: if isOrganizer()
-        || (registeredPlayer()
-          && resource.data.playerId == request.auth.uid
-          && resource.data.status == 'PENDING');
-    }
-
-    match /eventRegistrations/{registrationId} {
-      allow read: if isOrganizer()
-        || (isFacilitator() && resource.data.facilitatorId == request.auth.uid)
-        || (isCoach() && resource.data.coachId == request.auth.uid);
-
-      allow create: if isCoach()
-        && request.resource.data.coachId == request.auth.uid
-        && request.resource.data.paymentStatus == 'pending'
-        && request.resource.data.status == 'PENDING'
-        && request.resource.data.paymentMethod in ['cash', 'gcash', 'bank_transfer']
-        && request.resource.data.paymentProof is string
-        && request.resource.data.paymentProof.size() > 0
-        && eventDoc(request.resource.data.eventId).facilitatorId == request.resource.data.facilitatorId;
-
-      allow update: if isFacilitator()
-        && resource.data.facilitatorId == request.auth.uid
-        && facilitatorPaymentReviewOnly();
-
-      allow update: if isOrganizer() && facilitatorPaymentReviewOnly();
-      allow update: if isCoach()
-        && resource.data.coachId == request.auth.uid
-        && (coachRelatedRegistrationUpdateOnly() || coachRelatedRegistrationCancelOnly());
-      allow delete: if false;
+        || (signedIn() && resource.data.playerId == request.auth.uid && resource.data.status in ['pending', 'PENDING']);
     }
 
     match /payments/{paymentId} {
       allow read: if isOrganizer()
-        || (isFacilitator() && resource.data.facilitatorId == request.auth.uid)
         || (isCoach() && resource.data.coachId == request.auth.uid)
-        || (registeredPlayer() && resource.data.playerId == request.auth.uid);
-
-      allow create: if registeredPlayer()
-        && request.resource.data.playerId == request.auth.uid
-        && request.resource.data.paymentStatus == 'pending'
-        && request.resource.data.paymentMethod in ['cash', 'gcash', 'bank_transfer']
-        && request.resource.data.paymentProof is string
-        && request.resource.data.paymentProof.size() > 0
-        && request.resource.data.paymentProof.size() < 10000000;
-
-      allow create: if isCoach()
-        && request.resource.data.paymentStatus == 'pending'
-        && request.resource.data.coachId == request.auth.uid
-        && request.resource.data.paymentMethod in ['cash', 'gcash', 'bank_transfer']
-        && request.resource.data.paymentProof is string
-        && request.resource.data.paymentProof.size() > 0
-        && eventDoc(request.resource.data.eventId).facilitatorId == request.resource.data.facilitatorId
-        && teamDoc(request.resource.data.teamId).coachId == request.auth.uid;
-
-      allow update: if registeredPlayer()
-        && resource.data.playerId == request.auth.uid
-        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
-          'paymentMethod', 'paymentProof', 'updatedAt'
-        ])
-        && request.resource.data.paymentMethod in ['cash', 'gcash', 'bank_transfer']
-        && request.resource.data.paymentProof is string
-        && request.resource.data.paymentProof.size() > 0
-        && request.resource.data.paymentProof.size() < 10000000;
-
-      allow update: if isFacilitator()
-        && resource.data.facilitatorId == request.auth.uid
-        && facilitatorPaymentReviewOnly();
-      allow update: if isOrganizer() && facilitatorPaymentReviewOnly();
-      allow update: if isCoach()
-        && resource.data.coachId == request.auth.uid
-        && (coachRelatedRegistrationUpdateOnly() || coachRelatedRegistrationCancelOnly());
-
-      allow delete: if false;
+        || (isFacilitator() && resource.data.facilitatorId == request.auth.uid)
+        || (signedIn() && resource.data.playerId == request.auth.uid);
+      allow create, update: if isOrganizer()
+        || (isCoach() && request.resource.data.coachId == request.auth.uid)
+        || (isFacilitator() && resource.data.facilitatorId == request.auth.uid)
+        || (signedIn() && request.resource.data.playerId == request.auth.uid);
+      allow delete: if isOrganizer();
     }
 
     match /{document=**} {

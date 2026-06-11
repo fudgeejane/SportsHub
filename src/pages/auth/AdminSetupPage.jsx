@@ -2,7 +2,7 @@ import { useState } from 'react'
 import AuthPageShell from '../../components/auth/AuthPageShell'
 import { ROLES } from '../../contexts/AuthContext'
 import { isFirebaseConfigComplete } from '../../firebase'
-import { createAdminUser } from '../../hooks/useAuth.jsx'
+import { createAdminUser } from '../../hooks/useAuth'
 
 const setupCode = import.meta.env.VITE_ADMIN_SETUP_CODE || 'SPORTSHUB_ADMIN_SETUP'
 

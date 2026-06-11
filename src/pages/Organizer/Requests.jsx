@@ -1,5 +1,5 @@
 import JoinRequestCard from '../../components/registration/JoinRequestCard'
-import { useRegistration } from '../../hooks/useRegistration'
+import { useRegistration } from '../../hooks/useRegistrationManagement'
 
 export default function OrganizerRequestsPage() {
   const reg = useRegistration()

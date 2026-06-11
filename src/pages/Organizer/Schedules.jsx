@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { formatDate } from '../../utils/dateFormat'
 import ScheduleBracket from '../../components/schedule/ScheduleBracket'
 
 export default function OrganizerSchedulesPage() {
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const [selectedEventId, setSelectedEventId] = useState('')
 
   const eventsWithBrackets = useMemo(

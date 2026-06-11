@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Calendar, Trophy, Users } from 'lucide-react'
 import ScheduleBracket from '../../components/schedule/ScheduleBracket'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { useAuth } from '../../hooks/useAuth'
 import { useBrackets } from '../../hooks/useBrackets'
-import { useEvents } from '../../hooks/useEvents'
+import { useEvents } from '../../hooks/useEventManagement'
 import { formatDate } from '../../utils/dateFormat'
 
 export default function FacilitatorSchedulePage() {

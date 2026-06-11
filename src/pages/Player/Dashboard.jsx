@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import { useAuth } from '../../hooks/useAuth.jsx'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useAuth } from '../../hooks/useAuth'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { formatDate } from '../../utils/dateFormat'
 
 function isIncoming(value) {
@@ -18,7 +18,7 @@ function matchHasTeam(match, teamIds) {
 
 export default function PlayerDashboard() {
   const { currentUser, userProfile } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
 
   const activeMemberships = useMemo(
     () => system.members.filter((member) => member.playerId === currentUser?.uid && member.status === 'ACTIVE'),

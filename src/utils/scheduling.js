@@ -1,5 +1,4 @@
-import { averageSkill } from '../constants/skillLevel'
-import { teamSkillTotal } from './skillBalancing'
+import { averageSkill, teamSkillTotal } from './skillBalancing'
 
 export function teamAggregateSkill(team, members, playerProfiles) {
   const roster = members.filter((m) => m.teamId === team.id && m.status === 'ACTIVE')

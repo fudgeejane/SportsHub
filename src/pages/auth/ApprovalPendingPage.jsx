@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthPageShell from '../../components/auth/AuthPageShell'
 import { ROLES, STATUSES } from '../../contexts/AuthContext'
-import { useAuth } from '../../hooks/useAuth.jsx'
-import { useAvailableSports } from '../../hooks/useAvailableSports'
-import { useAvailableTeams } from '../../hooks/useAvailableTeams'
-import { useRegistration } from '../../hooks/useRegistration'
+import { useAuth } from '../../hooks/useAuth'
+import { useSportManagement } from '../../hooks/useSportManagement'
+import { useAvailableTeams } from '../../hooks/useTeamManagement'
+import { useRegistration } from '../../hooks/useRegistrationManagement'
 import { getDashboardPath } from '../../routes/navConfig'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
 import { toastError } from '../../utils/toast'
@@ -23,7 +23,7 @@ export default function ApprovalPendingPage() {
   const [sportId, setSportId] = useState('')
   const [teamId, setTeamId] = useState('')
   const [message, setMessage] = useState('')
-  const { sports, loading: sportsLoading, error: sportsError } = useAvailableSports()
+  const { sports, loading: sportsLoading, error: sportsError } = useSportManagement()
   const { teams, loading: teamsLoading, error: teamsError } = useAvailableTeams(sportId)
 
   const selectedTeam = useMemo(() => teams.find((team) => team.id === teamId) || null, [teamId, teams])

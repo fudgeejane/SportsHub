@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { useAuth } from '../../hooks/useAuth'
 import AuthDialog from './AuthDialog'
 
 export default function ForgotPasswordModal({ onBack, onClose }) {

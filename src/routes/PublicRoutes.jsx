@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Navigate, Route } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth.jsx'
+import { useAuth } from '../hooks/useAuth'
 import { canAccessDashboard } from '../utils/authAccess'
 import AccessDeniedPage from '../pages/auth/AccessDeniedPage'
 import AdminSetupPage from '../pages/auth/AdminSetupPage'

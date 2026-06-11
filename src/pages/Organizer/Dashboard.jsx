@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { ROLES } from '../../contexts/AuthContext'
-import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
+import { useAuth, useUserManagement } from '../../hooks/useAuth'
 import { usePayment } from '../../hooks/usePayment'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { MapPin, Calendar, CircleUser, Clock, Users } from 'lucide-react'
 
 function isWithinNextSevenDays(value) {
@@ -18,7 +18,7 @@ function isWithinNextSevenDays(value) {
 
 export default function OrganizerDashboard() {
   const { currentUser } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const payments = usePayment()
   const { users, loading: usersLoading } = useUserManagement(currentUser?.uid)
 

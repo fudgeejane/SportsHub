@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { isValidTeamStructure } from '../../constants/teamStructure'
-import { useAuth } from '../../hooks/useAuth.jsx'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { isValidTeamStructure } from '../../hooks/useSportManagement'
+import { useAuth } from '../../hooks/useAuth'
+import { useSportManagement } from '../../hooks/useSportManagement'
 
 function inputClass() {
   return 'min-h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
@@ -9,7 +9,7 @@ function inputClass() {
 
 export default function PlayerProfilePage() {
   const { userProfile } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const [form, setForm] = useState({
     displayName: userProfile?.displayName || '',
     age: userProfile?.age || '',

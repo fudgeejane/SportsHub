@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import ScheduleBracket from '../../components/schedule/ScheduleBracket'
 import { useBrackets } from '../../hooks/useBrackets'
-import { useEvents } from '../../hooks/useEvents'
+import { useEvents } from '../../hooks/useEventManagement'
 
 export default function OrganizerSchedulePage() {
   const [eventId, setEventId] = useState('')

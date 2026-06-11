@@ -4,10 +4,10 @@ import { db } from '../firebase'
 import { generateBalancedBracket, groupMatchesByRound } from '../utils/scheduling'
 import { toastError, toastSuccess } from '../utils/toast'
 import { ROLES } from '../contexts/AuthContext'
-import { useEvents } from './useEvents'
+import { useEvents } from './useEventManagement'
 import { usePayment } from './usePayment'
-import { useTeams } from './useTeams'
-import { useAuth } from './useAuth.jsx'
+import { useTeams } from './useTeamManagement'
+import { useAuth } from './useAuth'
 
 export function useBrackets(eventId = '') {
   const { currentUser, role, userProfile } = useAuth()

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { applyActionCode } from 'firebase/auth'
+import { applyActionCode, signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 import { PUBLIC_ROUTES } from '../routes/public-routes'
 
@@ -19,7 +19,7 @@ export function useEmailVerificationHandler() {
     applyActionCode(auth, oobCode)
       .then(async () => {
         if (!active) return
-        if (auth.currentUser) await auth.signOut()
+        if (auth.currentUser) await signOut(auth)
         navigate(PUBLIC_ROUTES.signIn, {
           replace: true,
           state: { emailVerified: true, restoreScrollY: 0 },

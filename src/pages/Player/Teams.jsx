@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { Users } from 'lucide-react'
-import { useAuth } from '../../hooks/useAuth.jsx'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useAuth } from '../../hooks/useAuth'
+import { useSportManagement } from '../../hooks/useSportManagement'
 
 export default function PlayerTeamsPage() {
   const { currentUser } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
 
   const activeMemberships = useMemo(
     () => system.members.filter((member) => member.playerId === currentUser?.uid && member.status === 'ACTIVE'),

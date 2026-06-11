@@ -1,5 +1,5 @@
 import { Check, X } from 'lucide-react'
-import { useRegistration } from '../../hooks/useRegistration'
+import { useRegistration } from '../../hooks/useRegistrationManagement'
 
 const formatLabel = (value) =>
   value

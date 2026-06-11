@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthPageShell from '../../components/auth/AuthPageShell'
 import { auth } from '../../firebase'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { useAuth } from '../../hooks/useAuth'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
 
 export default function VerifyEmailPage() {

@@ -10,17 +10,34 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { PAYMENT_METHODS, PAYMENT_STATUS } from '../constants/registration'
 import { ROLES } from '../contexts/AuthContext'
 import { db } from '../firebase'
 import { isTeamPaymentReady } from '../utils/scheduling'
 import { toastError, toastSuccess } from '../utils/toast'
-import { useAuth } from './useAuth.jsx'
+import { useAuth } from './useAuth'
 
 const PAYMENTS = 'payments'
 const TEAM_MEMBERS = 'teamMembers'
 
 const organizerRoles = [ROLES.COMMUNITY_ORGANIZER, ROLES.ADMIN]
+
+export const PAYMENT_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+}
+
+export const PAYMENT_METHODS = {
+  CASH: 'cash',
+  GCASH: 'gcash',
+  BANK_TRANSFER: 'bank_transfer',
+}
+
+export const PAYMENT_METHOD_LABELS = {
+  [PAYMENT_METHODS.CASH]: 'Cash',
+  [PAYMENT_METHODS.GCASH]: 'GCash',
+  [PAYMENT_METHODS.BANK_TRANSFER]: 'Bank Transfer',
+}
 
 function snapshotRows(snapshot) {
   return snapshot.docs.map((entry) => ({ id: entry.id, ...entry.data() }))

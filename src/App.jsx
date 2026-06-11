@@ -1,7 +1,7 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
-import GlobalLoadingScreen from './components/loading/GlobalLoadingScreen'
-import { useAuth } from './hooks/useAuth.jsx'
-import { useGlobalLoading } from './hooks/useGlobalLoading.jsx'
+import Loading from './components/loading/Loading'
+import { useAuth } from './hooks/useAuth'
+import { useGlobalLoading } from './components/loading/Loading'
 import { protectedRoutes } from './routes/ProtectedRoutes'
 import { publicRoutes } from './routes/PublicRoutes'
 import { PUBLIC_ROUTES } from './routes/public-routes'
@@ -13,7 +13,7 @@ function AppRoutes() {
   return (
     <>
       {(authLoading || isGlobalLoading) && (
-        <GlobalLoadingScreen label={authLoading ? 'Checking your SportsHub session...' : loadingLabel} />
+        <Loading label={authLoading ? 'Checking your SportsHub session...' : loadingLabel} />
       )}
       <Routes>
         {publicRoutes}

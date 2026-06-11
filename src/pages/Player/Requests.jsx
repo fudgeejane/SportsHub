@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { ArrowRightLeft, Users, X } from 'lucide-react'
-import { useAuth } from '../../hooks/useAuth.jsx'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useAuth } from '../../hooks/useAuth'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { formatTimestamp } from '../../utils/dateFormat'
 
 export default function PlayerRequestsPage() {
   const { currentUser } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const [transferModalOpen, setTransferModalOpen] = useState(false)
   const [selectedTeam, setSelectedTeam] = useState(null)
 

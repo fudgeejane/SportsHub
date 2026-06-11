@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { CalendarPlus, Pencil, Trash2, X } from 'lucide-react'
-import { PAYMENT_METHOD_LABELS, PAYMENT_METHODS } from '../../constants/registration'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { PAYMENT_METHOD_LABELS, PAYMENT_METHODS } from '../../hooks/usePayment'
+import { useAuth } from '../../hooks/useAuth'
 import { usePayment } from '../../hooks/usePayment'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useSportManagement } from '../../hooks/useSportManagement'
 
 const emptyRegistration = {
   teamId: '',
@@ -13,15 +13,13 @@ const emptyRegistration = {
   paymentProof: '',
 }
 
-// const registrationStatuses = ['PENDING', 'CANCELLED']
-
 function inputClass() {
   return 'min-h-11 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
 }
 
 export default function CoachEventRegistrationsPage() {
   const { currentUser, userProfile } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const payment = usePayment()
   const [form, setForm] = useState(emptyRegistration)
   const [modalOpen, setModalOpen] = useState(false)

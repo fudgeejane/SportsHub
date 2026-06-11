@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useAuth } from '../../hooks/useAuth.jsx'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useAuth } from '../../hooks/useAuth'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import ScheduleBracket from '../../components/schedule/ScheduleBracket'
 
@@ -10,7 +10,7 @@ function teamAppearsInMatch(match, teamIds) {
 
 export default function CoachSchedulesPage() {
   const { currentUser } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const [selectedEventId, setSelectedEventId] = useState('')
 
   const coachTeams = useMemo(

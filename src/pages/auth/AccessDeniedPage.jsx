@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import AuthPageShell from '../../components/auth/AuthPageShell'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { useAuth } from '../../hooks/useAuth'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'
 
 export default function AccessDeniedPage() {

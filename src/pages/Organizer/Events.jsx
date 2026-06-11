@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ROLES, STATUSES } from '../../contexts/AuthContext'
-import { useAuth, useUserManagement } from '../../hooks/useAuth.jsx'
-import { useEvents } from '../../hooks/useEvents'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useAuth, useUserManagement } from '../../hooks/useAuth'
+import { useEvents } from '../../hooks/useEventManagement'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { CirclePlus, Pencil, Trash2, Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import { formatDate } from '../../utils/dateFormat'
 import { toastSuccess, toastError } from '../../utils/toast'
@@ -54,7 +54,7 @@ function compareEventsBySchedule(a, b) {
 
 export default function OrganizerEventsPage() {
   const { currentUser } = useAuth()
-  const { sports } = useSportsSystem()
+  const { sports } = useSportManagement()
   const { users } = useUserManagement(currentUser?.uid)
   const events = useEvents()
   const [form, setForm] = useState(emptyEvent)

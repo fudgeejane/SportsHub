@@ -1,6 +1,11 @@
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
-import { SIGNUP_STATUS } from '../constants/registration'
 import { db } from '../firebase'
+
+export const SIGNUP_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+}
 
 export const JOIN_REQUEST_STATUS = {
   PENDING: 'PENDING',

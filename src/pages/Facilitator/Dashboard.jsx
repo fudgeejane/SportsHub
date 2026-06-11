@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { useAuth } from '../../hooks/useAuth'
 import { usePayment } from '../../hooks/usePayment'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { formatDate } from '../../utils/dateFormat'
 
 function isIncoming(value) {
@@ -15,7 +15,7 @@ function isIncoming(value) {
 
 export default function FacilitatorDashboard() {
   const { currentUser } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const paymentState = usePayment()
 
   const assignedEvents = useMemo(

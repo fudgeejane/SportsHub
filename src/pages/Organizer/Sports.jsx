@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import SportFormModal from '../../components/organizer/SportFormModal'
-import { normalizeTeamStructure, isValidTeamStructure } from '../../constants/teamStructure'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { normalizeTeamStructure, isValidTeamStructure } from '../../hooks/useSportManagement'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { MoreVertical, PlusCircle, Volleyball, Users } from 'lucide-react'
 
 export default function OrganizerSportsPage() {
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const [sportModal, setSportModal] = useState(null)
   const [openMenuId, setOpenMenuId] = useState(null)
   const [saving, setSaving] = useState(false)

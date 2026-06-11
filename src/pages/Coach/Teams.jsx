@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { ArrowLeft, Pencil, PlusCircle, Trash2, UserX, X } from 'lucide-react'
 import { doc, deleteDoc } from 'firebase/firestore'
-import { normalizeTeamStructure } from '../../constants/teamStructure'
-import { useAuth } from '../../hooks/useAuth.jsx'
-import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
+import { normalizeTeamStructure } from '../../hooks/useSportManagement'
+import { useAuth } from '../../hooks/useAuth'
+import { useSportManagement } from '../../hooks/useSportManagement'
 import { db } from '../../firebase'
-import { useGlobalLoading } from '../../hooks/useGlobalLoading.jsx'
+import { useGlobalLoading } from '../../components/loading/Loading'
 
 const emptyTeam = {
   name: '',
@@ -18,7 +18,7 @@ function inputClass() {
 
 export default function CoachTeamsPage() {
   const { currentUser, userProfile } = useAuth()
-  const system = useSportsSystem()
+  const system = useSportManagement()
   const { startLoading } = useGlobalLoading()
   const [form, setForm] = useState(emptyTeam)
   const [modalOpen, setModalOpen] = useState(false)
@@ -28,7 +28,6 @@ export default function CoachTeamsPage() {
   const [reassigningMember, setReassigningMember] = useState(null)
   const [deleteConfirmMember, setDeleteConfirmMember] = useState(null)
   const visibleTeams = system.teams.filter((team) => team.coachId === currentUser.uid && team.status !== 'ARCHIVED')
-  // const coachMembers = system.members.filter((member) => member.coachId === currentUser.uid && member.status === 'ACTIVE')
   const selectedSport = system.sports.find((sport) => sport.id === form.sportId)
   const selectedStructure = normalizeTeamStructure(selectedSport?.teamStructure)
 

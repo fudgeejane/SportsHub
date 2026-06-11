@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '../../constants/registration'
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from '../../hooks/usePayment'
+import { useAuth } from '../../hooks/useAuth'
 import { usePayment } from '../../hooks/usePayment'
-import { useTeams } from '../../hooks/useTeams'
+import { useTeams } from '../../hooks/useTeamManagement'
 import { toastError } from '../../utils/toast'
 
 function inputClass() {

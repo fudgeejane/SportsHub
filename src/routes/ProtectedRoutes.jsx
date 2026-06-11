@@ -2,7 +2,7 @@
 import { Navigate, Route, useLocation } from 'react-router-dom'
 import AppLayout from '../components/layout/AppLayout'
 import { ROLES, STATUSES } from '../contexts/AuthContext'
-import { useAuth } from '../hooks/useAuth.jsx'
+import { useAuth } from '../hooks/useAuth'
 import CoachDashboard from '../pages/Coach/Dashboard'
 import CoachEventRegistrationsPage from '../pages/Coach/EventRegistrations'
 import CoachRequestsPage from '../pages/Coach/Requests'
