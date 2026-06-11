@@ -1,14 +1,106 @@
 import { Clock, MapPin, Pencil, Trophy, X } from 'lucide-react'
-import { useState } from 'react'
-import { formatDate, formatDateTime } from '../../utils/dateFormat'
+import { useMemo, useState } from 'react'
+import { formatDate, formatDateTime, formatTime } from '../../utils/dateFormat'
+import { toastError, toastSuccess } from '../../utils/toast'
 
-export default function ScheduleBracket({ bracket, event, onEditMatch, highlightTeamIds = new Set() }) {
+const parseTimeToMinutes = (time) => {
+  if (!time) return null
+  const [hours, minutes] = time.split(':').map(Number)
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null
+  return hours * 60 + minutes
+}
+
+const timesOverlap = (startA, endA, startB, endB) => startA < endB && startB < endA
+
+const isScheduledMatch = (match) =>
+  Boolean(match?.matchDate && match?.startTime && match?.endTime && match?.venue)
+
+export default function ScheduleBracket({ bracket, event, onEditMatch, highlightTeamIds = new Set(), loading = false }) {
   const [editingMatch, setEditingMatch] = useState(null)
-  const [editForm, setEditForm] = useState({ matchDate: '', startTime: '', venue: '' })
+  const [editForm, setEditForm] = useState({ matchDate: '', startTime: '', endTime: '', venue: '' })
   const [confirmWinner, setConfirmWinner] = useState(null) // { match, winnerId, winnerName }
-  
+  const [formError, setFormError] = useState('')
+
   const rounds = Object.keys(bracket).sort((a, b) => Number(a) - Number(b))
-  
+
+  const allMatches = useMemo(
+    () => rounds.flatMap((round) => bracket[round] || []),
+    [bracket, rounds],
+  )
+
+  const unscheduledMatches = useMemo(
+    () => allMatches.filter((match) => !isScheduledMatch(match)),
+    [allMatches],
+  )
+
+  const existingVenues = useMemo(
+    () => [...new Set(allMatches.filter((match) => match.venue).map((match) => match.venue))],
+    [allMatches],
+  )
+
+  const dateRangeOptions = useMemo(() => {
+    if (!event?.startDate || !event?.endDate) return []
+    const dates = []
+    const start = new Date(event.startDate)
+    const end = new Date(event.endDate)
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      dates.push(new Date(d).toISOString().split('T')[0])
+    }
+
+    return dates
+  }, [event])
+
+  const conflictWarnings = useMemo(() => {
+    if (!editingMatch || !editForm.matchDate || !editForm.startTime || !editForm.endTime || !editForm.venue) {
+      return []
+    }
+
+    const start = parseTimeToMinutes(editForm.startTime)
+    const end = parseTimeToMinutes(editForm.endTime)
+    if (start === null || end === null) {
+      return [{ type: 'INVALID_TIME', message: 'Enter valid start and end times.' }]
+    }
+
+    if (end <= start) {
+      return [{ type: 'INVALID_RANGE', message: 'Match end time must be after its start time.' }]
+    }
+
+    return allMatches
+      .filter((match) => match.gameNumber !== editingMatch.gameNumber)
+      .filter((match) =>
+        match.matchDate === editForm.matchDate &&
+        match.venue?.trim().toLowerCase() === editForm.venue?.trim().toLowerCase() &&
+        match.startTime &&
+        match.endTime,
+      )
+      .map((match) => {
+        const otherStart = parseTimeToMinutes(match.startTime)
+        const otherEnd = parseTimeToMinutes(match.endTime)
+        if (otherStart === null || otherEnd === null) return null
+
+        if (!timesOverlap(start, end, otherStart, otherEnd)) return null
+
+        const sameExactTime = start === otherStart && end === otherEnd
+        return {
+          conflictMatch: match,
+          message: sameExactTime
+            ? 'Conflict: same venue at the same time.'
+            : 'Conflict: same venue with overlapping time.',
+        }
+      })
+      .filter(Boolean)
+  }, [allMatches, editForm, editingMatch])
+
+  const canSaveMatch = Boolean(
+    editingMatch &&
+      editForm.matchDate &&
+      editForm.startTime &&
+      editForm.endTime &&
+      editForm.venue &&
+      conflictWarnings.length === 0,
+  )
+
   // Determine team colors based on initial bracket position
   const getTeamColor = (match, isTeamA) => {
     // For first round, left side is pink, right side is blue
@@ -43,54 +135,93 @@ export default function ScheduleBracket({ bracket, event, onEditMatch, highlight
 
   const confirmWinnerSelection = () => {
     if (confirmWinner && onEditMatch) {
-      onEditMatch(confirmWinner.match.gameNumber, { 
-        winner: confirmWinner.winnerId, 
-        status: 'COMPLETED' 
+      onEditMatch(confirmWinner.match.gameNumber, {
+        winner: confirmWinner.winnerId,
+        status: 'COMPLETED',
       })
       setConfirmWinner(null)
     }
   }
-
-  // Generate date options from event date range
-  const getDateOptions = () => {
-    if (!event?.startDate || !event?.endDate) return []
-    
-    const dates = []
-    const start = new Date(event.startDate)
-    const end = new Date(event.endDate)
-    
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      dates.push(new Date(d).toISOString().split('T')[0])
-    }
-    
-    return dates
-  }
-
-  const dateOptions = getDateOptions()
 
   const openEditModal = (match) => {
     setEditingMatch(match)
     setEditForm({
       matchDate: match.matchDate || '',
       startTime: match.startTime || '',
+      endTime: match.endTime || '',
       venue: match.venue || '',
     })
+    setFormError('')
   }
 
   const closeEditModal = () => {
     setEditingMatch(null)
-    setEditForm({ matchDate: '', startTime: '', venue: '' })
+    setEditForm({ matchDate: '', startTime: '', endTime: '', venue: '' })
+    setFormError('')
   }
 
-  const saveMatchDetails = () => {
-    if (editingMatch && onEditMatch) {
-      onEditMatch(editingMatch.gameNumber, editForm)
-      closeEditModal()
+  const saveMatchDetails = async () => {
+    if (!editingMatch || !onEditMatch) return
+
+    if (!editForm.matchDate || !editForm.startTime || !editForm.endTime || !editForm.venue) {
+      setFormError('Please fill in all schedule fields before saving.')
+      return
     }
+
+    const start = parseTimeToMinutes(editForm.startTime)
+    const end = parseTimeToMinutes(editForm.endTime)
+
+    if (start === null || end === null) {
+      setFormError('Enter valid start and end times.')
+      return
+    }
+
+    if (end <= start) {
+      setFormError('End time must be later than start time.')
+      return
+    }
+
+    if (conflictWarnings.length) {
+      setFormError('Resolve schedule conflicts before saving.')
+      return
+    }
+
+    try {
+      await onEditMatch(editingMatch.gameNumber, editForm)
+      toastSuccess('Match schedule saved successfully.')
+      closeEditModal()
+    } catch (error) {
+      toastError(error?.message || 'Unable to save match schedule.')
+      setFormError(error?.message || 'Unable to save match schedule.')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 w-56 rounded-full bg-slate-100" />
+          <div className="h-4 w-80 rounded-full bg-slate-100" />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="h-48 rounded-3xl bg-slate-100" />
+            <div className="h-48 rounded-3xl bg-slate-100" />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="overflow-x-auto pb-4">
+      {unscheduledMatches.length > 0 ? (
+        <div className="mb-4 rounded-3xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900 shadow-sm">
+          <p className="font-black">Schedule assignment required</p>
+          <p className="mt-1 text-slate-700">
+            {unscheduledMatches.length} match{unscheduledMatches.length === 1 ? '' : 'es'} still need a date, time, and venue before the final schedule can be published.
+            Open any game to assign schedule details.
+          </p>
+        </div>
+      ) : null}
       <div className="flex gap-12 min-w-max items-center justify-center" style={{ minHeight: '500px' }}>
         {rounds.map((round, roundIndex) => {
           const isLastRound = roundIndex === rounds.length - 1
@@ -286,16 +417,21 @@ export default function ScheduleBracket({ bracket, event, onEditMatch, highlight
             </div>
 
             <div className="mt-5 space-y-4">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                <p className="font-semibold">Event</p>
+                <p className="mt-1 text-sm text-slate-600">{event?.name || 'Unknown event'}</p>
+              </div>
+
               <label className="block text-sm font-bold text-slate-700">
                 Match Date
-                {dateOptions.length > 0 ? (
+                {dateRangeOptions.length > 0 ? (
                   <select
                     value={editForm.matchDate}
                     onChange={(e) => setEditForm({ ...editForm, matchDate: e.target.value })}
                     className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                   >
                     <option value="">Select date</option>
-                    {dateOptions.map((date) => (
+                    {dateRangeOptions.map((date) => (
                       <option key={date} value={date}>
                         {formatDate(date)}
                       </option>
@@ -311,26 +447,62 @@ export default function ScheduleBracket({ bracket, event, onEditMatch, highlight
                 )}
               </label>
 
-              <label className="block text-sm font-bold text-slate-700">
-                Match Time
-                <input
-                  type="time"
-                  value={editForm.startTime}
-                  onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                />
-              </label>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block text-sm font-bold text-slate-700">
+                  Start Time
+                  <input
+                    type="time"
+                    value={editForm.startTime}
+                    onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </label>
+                <label className="block text-sm font-bold text-slate-700">
+                  End Time
+                  <input
+                    type="time"
+                    value={editForm.endTime}
+                    onChange={(e) => setEditForm({ ...editForm, endTime: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </label>
+              </div>
 
               <label className="block text-sm font-bold text-slate-700">
                 Venue/Location
                 <input
+                  list="venue-options"
                   type="text"
                   value={editForm.venue}
                   onChange={(e) => setEditForm({ ...editForm, venue: e.target.value })}
                   placeholder="e.g., Court 1, Main Arena, Field A"
                   className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
+                <datalist id="venue-options">
+                  {existingVenues.map((venue) => (
+                    <option key={venue} value={venue} />
+                  ))}
+                </datalist>
               </label>
+
+              {conflictWarnings.length > 0 ? (
+                <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-900">
+                  <p className="font-black">Schedule conflict detected</p>
+                  <ul className="mt-2 space-y-2 text-xs font-medium text-red-800">
+                    {conflictWarnings.map((warning, index) => (
+                      <li key={index}>
+                        {warning.message} - Game {warning.conflictMatch.gameNumber} at {formatTime(warning.conflictMatch.startTime)} to {formatTime(warning.conflictMatch.endTime)} in {warning.conflictMatch.venue}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {formError ? (
+                <div className="rounded-2xl bg-yellow-50 px-4 py-3 text-sm font-semibold text-yellow-900">
+                  {formError}
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-6 flex gap-2">
@@ -344,7 +516,12 @@ export default function ScheduleBracket({ bracket, event, onEditMatch, highlight
               <button
                 type="button"
                 onClick={saveMatchDetails}
-                className="flex-1 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
+                disabled={!canSaveMatch}
+                className={`flex-1 rounded-2xl px-4 py-3 text-sm font-bold transition ${
+                  canSaveMatch
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'cursor-not-allowed bg-slate-200 text-slate-500'
+                }`}
               >
                 Save Changes
               </button>

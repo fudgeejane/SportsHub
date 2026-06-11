@@ -114,8 +114,9 @@ export default function SignInModal({ onClose }) {
             name="email"
             value={form.email}
             onChange={updateField}
-            className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
-            placeholder="you@sportshub.com"
+            className='rounded-lg border border-slate-200 px-4 py-2 outline-none transition focus:border-cyan-500'
+            placeholder="you@email.com"
+            autoComplete="off"
           />
         </label>
 
@@ -127,27 +128,26 @@ export default function SignInModal({ onClose }) {
             name="password"
             value={form.password}
             onChange={updateField}
-            className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
+            className='rounded-lg border border-slate-200 px-4 py-2 outline-none transition focus:border-cyan-500'
             placeholder="Minimum 6 characters"
           />
         </label>
 
         {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</p> : null}
-
         <button
           type="submit"
           disabled={loading}
-          className="rounded-2xl bg-blue-600 px-4 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg cursor-pointer bg-blue-500 hover:bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? 'Please wait...' : 'Sign In'}
         </button>
       </form>
 
-      <div className="mt-5 flex items-center justify-between gap-3 text-sm">
-        <button type="button" onClick={openForgotPassword} className="font-semibold text-blue-600 hover:text-blue-700">
-          Forgot password?
-        </button>
-        <button type="button" onClick={openSignUp} className="font-semibold text-slate-700 hover:text-slate-950">
+      <div className="mt-4 flex items-center justify-between gap-3 text-sm">
+          <button type="button" onClick={openForgotPassword} className="cursor-pointer hover:underline font-semibold text-blue-600 hover:text-blue-700">
+              Forgot password?
+            </button>
+        <button type="button" onClick={openSignUp} className="cursor-pointer hover:underline font-semibold text-slate-700 hover:text-slate-950">
           Need an account?
         </button>
       </div>

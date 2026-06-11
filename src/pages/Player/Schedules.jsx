@@ -36,7 +36,13 @@ export default function PlayerSchedulesPage() {
       system.events
         .flatMap((event) =>
           (event.schedule || [])
-            .filter((match) => matchHasTeam(match, teamIds))
+            .filter((match) =>
+              matchHasTeam(match, teamIds) &&
+              match.matchDate &&
+              match.startTime &&
+              match.endTime &&
+              match.venue,
+            )
             .map((match) => ({
               ...match,
               eventId: event.id,
@@ -124,7 +130,7 @@ export default function PlayerSchedulesPage() {
                 </div>
                 <div className="md:text-right">
                   <p className="text-sm font-black text-blue-700">{formatDate(slot.eventDate) || 'No date set'}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-600">{formatTime(slot.time) || 'Time TBD'}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-600">{formatTime(slot.startTime) || 'Time TBD'}</p>
                   {slot.round ? <p className="mt-1 text-xs font-black uppercase text-slate-500">Round {slot.round}</p> : null}
                 </div>
               </div>

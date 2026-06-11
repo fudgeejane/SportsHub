@@ -25,8 +25,10 @@ export default function OrganizerUsersPage() {
   const [sortBy, setSortBy] = useState('displayName')
   const [sortDir, setSortDir] = useState('asc')
   const [searchQuery, setSearchQuery] = useState('')
+  const [pendingSearchQuery, setPendingSearchQuery] = useState('')
   const [pendingRoleFilter, setPendingRoleFilter] = useState('ALL')
   const [pageIndex, setPageIndex] = useState(0)
+  const [pendingPageIndex, setPendingPageIndex] = useState(0)
   const [activeTab, setActiveTab] = useState(TABS.USERS)
   const [editingUser, setEditingUser] = useState(null)
   const [editRole, setEditRole] = useState('')
@@ -87,6 +89,8 @@ export default function OrganizerUsersPage() {
     (user) => user.status === STATUSES.PENDING && (user.role === ROLES.COACH || user.role === ROLES.FACILITATOR),
   ).length
 
+  const normalizedPendingSearch = pendingSearchQuery.trim().toLowerCase()
+
   const approvalQueue = useMemo(() => {
     const list = users.filter((user) => {
       const organizerManagedRole = user.role === ROLES.COACH || user.role === ROLES.FACILITATOR
@@ -95,13 +99,13 @@ export default function OrganizerUsersPage() {
       return true
     })
 
-    const searched = normalizedSearch
+    const searched = normalizedPendingSearch
       ? list.filter((user) =>
           [user.displayName, user.email, user.role, user.status]
             .filter(Boolean)
             .join(' ')
             .toLowerCase()
-            .includes(normalizedSearch),
+            .includes(normalizedPendingSearch),
         )
       : list
 
@@ -115,7 +119,20 @@ export default function OrganizerUsersPage() {
     })
 
     return sorted
-  }, [users, normalizedSearch, pendingRoleFilter, sortBy, sortDir])
+  }, [users, normalizedPendingSearch, pendingRoleFilter, sortBy, sortDir])
+
+  const pendingPageCount = Math.max(1, Math.ceil(approvalQueue.length / PAGE_SIZE))
+
+  useEffect(() => {
+    if (pendingPageIndex >= pendingPageCount) {
+      queueMicrotask(() => setPendingPageIndex(0))
+    }
+  }, [pendingPageCount, pendingPageIndex])
+
+  const currentPendingPageUsers = useMemo(
+    () => approvalQueue.slice(pendingPageIndex * PAGE_SIZE, pendingPageIndex * PAGE_SIZE + PAGE_SIZE),
+    [approvalQueue, pendingPageIndex],
+  )
 
 
   const handleEditUser = (user) => {
@@ -370,31 +387,59 @@ export default function OrganizerUsersPage() {
             </>
           ) : (
             <>
-              <div className="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-950">Pending Approval</h3>
-                  <p className="mt-1 text-sm text-slate-600">Review coach and facilitator accounts after email verification.</p>
-                </div>
+              <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="relative w-full sm:w-80">
+                      <Search
+                        size={18}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                      />
+                      <input
+                        value={pendingSearchQuery}
+                        onChange={(event) => setPendingSearchQuery(event.target.value)}
+                        placeholder="Search pending users"
+                        className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 py-2 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white"
+                      />
+                    </div>
                 {loading ? (
                   <div className="h-10 w-48 animate-pulse rounded bg-slate-100" />
                 ) : (
-                  <select
-                    value={pendingRoleFilter}
-                    onChange={(event) => setPendingRoleFilter(event.target.value)}
-                    className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  
+                      <div className="flex gap-4 items-center gap-2">
+                <p className="text-xs text-slate-600">
+                  Showing {approvalQueue.length ? pendingPageIndex * PAGE_SIZE + 1 : 0} -{' '}
+                  {approvalQueue.length ? pendingPageIndex * PAGE_SIZE + currentPendingPageUsers.length : 0} of {approvalQueue.length}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPendingPageIndex((current) => Math.max(current - 1, 0))}
+                    disabled={pendingPageIndex === 0}
+                    className="rounded-xl border border-slate-200 bg-white p-1 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="ALL">All pending roles</option>
-                    <option value={ROLES.COACH}>Coaches</option>
-                    <option value={ROLES.FACILITATOR}>Facilitators</option>
-                  </select>
+                    <ChevronLeft className='h-4 w-4' />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPendingPageIndex((current) => Math.min(current + 1, pendingPageCount - 1))}
+                    disabled={pendingPageIndex >= pendingPageCount - 1}
+                    className="rounded-xl border border-slate-200 bg-white p-1 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <ChevronRight className='h-4 w-4' />
+                  </button>
+                </div>
+              </div>
+                  </div>
                 )}
               </div>
 
+           
+
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[860px] text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
+                  <thead className="bg-slate-100 border-b border-slate-200 text-xs uppercase tracking-wider text-blue-700">
                     <tr>
-                      <th className="px-5 py-3 w-[30%]">
+                      <th className="px-4 py-2 w-[30%]">
                         <button
                           type="button"
                           onClick={() => {
@@ -404,11 +449,11 @@ export default function OrganizerUsersPage() {
                           className="flex items-center gap-2 text-xs uppercase"
                         >
                           User
-                          {sortBy === 'displayName' ? (sortDir === 'asc' ? <ChevronUp className='h-3 w-3'/> : <ChevronDown className='h-3 w-3'/>) : <ChevronsUpDown className='h-3 w-3 opacity-40'/>}
+                          {sortBy === 'displayName' ? (sortDir === 'asc' ? <ChevronUp className='h-4 w-4'/> : <ChevronDown className='h-4 w-4'/>) : <ChevronsUpDown className='h-4 w-4 opacity-40'/>}
                         </button>
                       </th>
 
-                      <th className="px-5 py-3 w-[30%]">
+                      <th className="px-4 py-2 w-[30%]">
                         <button
                           type="button"
                           onClick={() => {
@@ -418,11 +463,11 @@ export default function OrganizerUsersPage() {
                           className="flex items-center gap-2 text-xs uppercase"
                         >
                           Email
-                          {sortBy === 'email' ? (sortDir === 'asc' ? <ChevronUp className='h-3 w-3'/> : <ChevronDown className='h-3 w-3'/>) : <ChevronsUpDown className='h-3 w-3 opacity-40'/>}
+                          {sortBy === 'email' ? (sortDir === 'asc' ? <ChevronUp className='h-4 w-4'/> : <ChevronDown className='h-4 w-4'/>) : <ChevronsUpDown className='h-4 w-4 opacity-40'/>}
                         </button>
                       </th>
 
-                      <th className="px-5 py-3 w-[20%]">
+                      <th className="px-4 py-2 w-[20%]">
                         <button
                           type="button"
                           onClick={() => {
@@ -432,28 +477,24 @@ export default function OrganizerUsersPage() {
                           className="flex items-center gap-2 text-xs uppercase"
                         >
                           Role
-                          {sortBy === 'role' ? (sortDir === 'asc' ? <ChevronUp className='h-3 w-3'/> : <ChevronDown className='h-3 w-3'/>) : <ChevronsUpDown className='h-3 w-3 opacity-40'/>}
+                          {sortBy === 'role' ? (sortDir === 'asc' ? <ChevronUp className='h-4 w-4'/> : <ChevronDown className='h-4 w-4'/>) : <ChevronsUpDown className='h-4 w-4 opacity-40'/>}
                         </button>
                       </th>
 
-                      <th className="px-5 py-3">Status</th>
-                      <th className="px-5 py-3">Email Verified</th>
-                      <th className="px-5 py-3">Actions</th>
+                      <th className="px-4 py-2 text-xs uppercase w-[20%]">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {approvalQueue.length ? (
-                      approvalQueue.map((user) => (
-                        <tr key={user.uid || user.id}>
-                          <td className="px-5 py-3">
-                            <p className="font-bold text-slate-950">{user.displayName}</p>
-                            <p className="text-slate-500">{user.email}</p>
-                          </td>
-                          <td className="px-5 py-3">
+                  <tbody className="divide-y divide-slate-200">
+                    {currentPendingPageUsers.length ? (
+                      currentPendingPageUsers.map((user) => (
+                        <tr key={user.uid || user.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-2 text-slate-700 text-sm">{user.displayName}</td>
+                          <td className="px-4 py-2 text-slate-700 text-sm">{user.email}</td>
+                          <td className="px-4 py-2">
                             <select
                               value={user.role}
                               onChange={(event) => changeRole(user.uid || user.id, event.target.value)}
-                              className="rounded-xl border border-slate-200 px-3 py-2 font-semibold text-slate-700 outline-none transition focus:border-blue-500"
+                              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500"
                             >
                               {roleOptions.map((role) => (
                                 <option key={role} value={role}>
@@ -462,21 +503,18 @@ export default function OrganizerUsersPage() {
                               ))}
                             </select>
                           </td>
-                          <td className="px-5 py-3">
-                            <span className="rounded-full bg-slate-100 px-3 py-1 font-bold text-slate-700">{formatLabel(user.status)}</span>
-                          </td>
-                          <td className="px-5 py-3">{user.emailVerified ? 'Yes' : 'No'}</td>
-                          <td className="px-5 py-3">
+
+                          <td className="px-4 py-2">
                             <div className="flex flex-wrap gap-2">
                               <button
                                 onClick={() => approveUser(user.uid || user.id)}
-                                className="inline-flex items-center justify-center rounded-lg px-5 py-3 !text-sm text-white bg-green-500 hover:bg-gren-600 cursor-pointer"
-                              > 
+                                className="rounded-lg cursor-pointer bg-green-500 px-4 py-2 !text-xs font-semibold text-white transition hover:bg-green-600"
+                              >
                                 Approve
                               </button>
                               <button
                                 onClick={() => rejectUser(user.uid || user.id)}
-                                className="inline-flex items-center justify-center rounded-lg px-5 py-3 !text-sm text-white bg-red-500 hover:bg-red-600 cursor-pointer"
+                                className="rounded-lg cursor-pointer bg-red-500 px-4 py-2 !text-xs font-semibold text-white transition hover:bg-red-600"
                               >
                                 Reject
                               </button>
@@ -486,7 +524,7 @@ export default function OrganizerUsersPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={5} className="px-5 py-8 text-center text-sm text-slate-500">
+                        <td colSpan={6} className="px-5 py-8 text-center text-sm text-slate-500">
                           No pending user approvals at the moment.
                         </td>
                       </tr>

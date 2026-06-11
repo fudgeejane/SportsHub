@@ -36,7 +36,7 @@ export default function ForgotPasswordModal({ onBack, onClose }) {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="rounded-2xl border border-slate-200 px-4 py-3 outline-none transition focus:border-cyan-500"
+            className="rounded-lg border border-slate-200 px-4 py-2 outline-none transition focus:border-cyan-500"
             placeholder="you@sportshub.com"
           />
         </label>
@@ -44,21 +44,14 @@ export default function ForgotPasswordModal({ onBack, onClose }) {
         {error ? <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">{error}</p> : null}
         <button
           type="submit"
-          className="rounded-2xl bg-blue-600 px-4 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           disabled={loading}
         >
           {loading ? 'Sending...' : 'Send reset email'}
         </button>
       </form>
 
-      <button
-        type="button"
-        onClick={onBack}
-        className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition hover:text-slate-950"
-      >
-        <ArrowLeft size={16} />
-        Back to sign in
-      </button>
+    
     </AuthDialog>
   )
 }

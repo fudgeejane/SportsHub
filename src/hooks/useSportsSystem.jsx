@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useCallback, useMemo, useState } from 'react'
-import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { normalizeTeamStructure } from '../constants/teamStructure'
 import { COLLECTIONS, normalizeNumber } from '../constants/collections'
 import { db } from '../firebase'
@@ -45,7 +45,7 @@ export function useSportsSystem() {
         addDoc(collection(db, COLLECTIONS.SPORTS), {
           name: data.name?.trim(),
           description: data.description?.trim() || '',
-          teamStructure: normalizeTeamStructure(data.teamStructure),
+          teamStructure: data.teamStructure ? normalizeTeamStructure(data.teamStructure) : null,
           status: 'ACTIVE',
           createdBy: currentUser.uid,
           createdAt: serverTimestamp(),
@@ -61,6 +61,7 @@ export function useSportsSystem() {
         updateDoc(doc(db, COLLECTIONS.SPORTS, sportId), {
           name: data.name?.trim(),
           description: data.description?.trim() || '',
+          teamStructure: data.teamStructure ? normalizeTeamStructure(data.teamStructure) : null,
           updatedAt: serverTimestamp(),
         }),
       ),
@@ -86,6 +87,12 @@ export function useSportsSystem() {
           updatedAt: serverTimestamp(),
         }),
       ),
+    [runAction],
+  )
+
+  const deleteSport = useCallback(
+    (sportId) =>
+      runAction('Deleting sport...', () => deleteDoc(doc(db, COLLECTIONS.SPORTS, sportId))),
     [runAction],
   )
 
@@ -125,6 +132,7 @@ export function useSportsSystem() {
     createSport,
     updateSport,
     archiveSport,
+    deleteSport,
     createEvent: eventsHook.createEvent,
     updateEvent: eventsHook.updateEvent,
     updateSportTeamStructure,

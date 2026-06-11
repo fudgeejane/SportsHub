@@ -81,9 +81,9 @@ const fadeUp = {
 
 function Logo({ onHome }) {
   return (
-    <button type="button" onClick={onHome} className="flex items-center gap-3" aria-label="SportsHub home">
+    <button type="button" onClick={onHome} className="flex items-center gap-3 transition hover:opacity-80" aria-label="SportsHub home">
         <img src={navLogo} alt="SportsHub logo" className="h-10 w-10" />
-      <span className="text-lg font-bold text-slate-950">SportsHub</span>
+      <span className="text-lg font-bold bg-gradient-to-r from-slate-950 to-cyan-600 bg-clip-text text-transparent">SportsHub</span>
     </button>
   )
 }
@@ -183,8 +183,8 @@ export default function LandingPage({ authModal }) {
   return (
     <div className="landing-page min-h-screen overflow-x-hidden bg-[#f7f9fc] text-slate-700">
    
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/70 bg-white/90 shadow-sm shadow-slate-900/5 backdrop-blur-xl">
-        <nav className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap lg:px-8">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-cyan-100/50 bg-white/95 shadow-md shadow-slate-900/8 backdrop-blur-xl">
+        <nav className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:flex-nowrap lg:px-8">
           <Logo onHome={navigateHome} />
           <div className="order-3 flex w-full items-center text-sm justify-center gap-4 overflow-x-auto text-nowrap border-t border-slate-100 pt-3 sm:gap-6 md:w-auto md:border-t-0 md:pt-0 lg:order-2 lg:gap-8" aria-label="Primary navigation">
             {navLinks.map((link) => (
@@ -192,9 +192,10 @@ export default function LandingPage({ authModal }) {
                 type="button"
                 key={link.label}
                 onClick={(event) => handleSectionNav(event, link.href)}
-                className="text-sm font-medium text-slate-600 transition hover:text-slate-950"
+                className="text-sm font-medium text-slate-600 transition hover:text-cyan-600 relative group"
               >
                 {link.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-500 to-cyan-600 group-hover:w-full transition-all duration-300" />
               </button>
             ))}
           </div>
@@ -202,14 +203,14 @@ export default function LandingPage({ authModal }) {
             <button
               type="button"
               onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signIn)}
-              className="hidden rounded-full px-4 py-2 !text-sm font-semibold text-blue-500 transition hover:bg-slate-100 sm:inline-flex"
+              className="hidden cursor-pointer rounded-lg px-4 py-2.5 !text-sm font-semibold text-cyan-600 transition hover:bg-cyan-50 active:scale-95 sm:inline-flex"
             >
               Sign In
             </button>
             <button
               type="button"
               onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
-              className="inline-flex items-center gap-2 rounded-full bg-blue-500 hover:bg-blue-600 px-4 py-2 !text-sm !text-white"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 px-4 py-2.5 !text-sm !text-white font-semibold shadow-lg shadow-cyan-500/30 transition hover:shadow-xl active:scale-95"
             >
               Join Now <ArrowRight size={16} />
             </button>
@@ -247,11 +248,11 @@ export default function LandingPage({ authModal }) {
               A comprehensive platform managing the complete player lifecycle—from registration and coach approval to team assignment, payment verification, and automated scheduling with bracket generation.
             </p>
 
-            <div className="hero-animate mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="hero-animate mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <button
                 type="button"
                 onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
-                className="inline-flex items-center hover:-translate-y-0.5 gap-2 rounded-full bg-blue-500 hover:bg-blue-600 px-4 py-4 text-sm !text-white"
+                className="inline-flex items-center hover:-translate-y-0.5 gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 px-6 py-3 text-base !text-white font-semibold shadow-lg shadow-cyan-500/30 transition hover:shadow-xl active:scale-95"
               >
                 Explore Platform <ArrowRight size={18} />
               </button>
@@ -259,7 +260,7 @@ export default function LandingPage({ authModal }) {
               <button
                 type="button"
                 onClick={(event) => handleSectionNav(event, '#about')}
-                className="hero-action inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 font-bold !text-white shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/20"
+                className="hero-action inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white/30 bg-white/10 px-6 py-3 font-semibold !text-white shadow-lg shadow-cyan-900/20 backdrop-blur transition hover:-translate-y-0.5 hover:border-white/50 hover:bg-white/20 active:scale-95"
               >
                 <Target size={18} /> Learn About SportsHub
               </button>
@@ -269,18 +270,18 @@ export default function LandingPage({ authModal }) {
         </div>
       </section>
 
-        <section id="features" className="section-band bg-white ">
+        <section id="features" className="section-band bg-white">
           <SectionHeading eyebrow="Features" title="Key tools for better community sports management." />
-          <div className="mx-auto mt-12 grid max-w-7xl gap-5 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
+          <div className="mx-auto mt-16 grid max-w-7xl gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
             {features.map((feature, index) => {
               const FeatureIcon = feature.icon
               return (
-                <motion.article {...fadeUp} transition={{ duration: 0.45, delay: index * 0.04 }} key={feature.title} className="feature-card">
-                  <div className="icon-tile"><FeatureIcon size={22} /></div>
-                  <h3>{feature.title}</h3>
-                  <ul>
+                <motion.article {...fadeUp} transition={{ duration: 0.45, delay: index * 0.04 }} key={feature.title} className="group rounded-2xl border border-cyan-100 bg-gradient-to-br from-white to-cyan-50/30 p-6 shadow-sm transition hover:shadow-lg hover:border-cyan-200">
+                  <div className="inline-flex rounded-xl bg-gradient-to-br from-cyan-50 to-blue-50 p-3 text-cyan-600 transition group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-cyan-100 group-hover:to-blue-100"><FeatureIcon size={24} /></div>
+                  <h3 className="mt-4 text-lg font-semibold text-slate-900">{feature.title}</h3>
+                  <ul className="mt-3 space-y-2">
                     {feature.points.map((point) => (
-                      <li key={point}><Check size={16} /> {point}</li>
+                      <li key={point} className="flex items-start gap-2 text-sm text-slate-600"><Check size={16} className="mt-0.5 flex-shrink-0 text-cyan-500" /> <span>{point}</span></li>
                     ))}
                   </ul>
                 </motion.article>
@@ -289,59 +290,76 @@ export default function LandingPage({ authModal }) {
           </div>
         </section>
 
-        <section id="about" className="section-band">
+        <section id="about" className="section-band bg-gradient-to-b from-slate-50 to-white">
           <SectionHeading eyebrow="About SportsHub" title="End-to-end platform for municipal sports program management." />
           <div className="mx-auto mt-8 max-w-4xl px-4 text-center text-lg leading-8 text-slate-600 sm:px-6 lg:px-8">
-            SportsHub provides a complete workflow system for community sports management at the municipal level. The platform handles player registration with skill assessment, multi-stage approval workflows involving coaches and facilitators, team roster management, integrated payment tracking with verification, and automated bracket generation for scheduled events. Each role—from community organizers to players—has tailored access and responsibilities ensuring no incomplete teams, unpaid players, or unauthorized access.
+            <p>
+              SportsHub provides a complete workflow system for community sports management at the municipal level. The platform handles player registration with skill assessment, multi-stage approval workflows involving coaches and facilitators, team roster management, integrated payment tracking with verification, and automated bracket generation for scheduled events. Each role—from community organizers to players—has tailored access and responsibilities ensuring no incomplete teams, unpaid players, or unauthorized access.
+            </p>
           </div>
-          <div className="mx-auto mt-10 grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
+          <div className="mx-auto mt-12 grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
             {benefits.map((benefit) => (
-              <motion.article {...fadeUp} key={benefit.title} className="benefit-card">
-                <ShieldCheck size={26} />
-                <h3>{benefit.title}</h3>
-                <p>{benefit.text}</p>
+              <motion.article {...fadeUp} key={benefit.title} className="rounded-2xl border border-cyan-100 bg-gradient-to-br from-cyan-50 to-white p-6 shadow-sm transition hover:shadow-md hover:border-cyan-200">
+                <ShieldCheck size={28} className="text-cyan-600" />
+                <h3 className="mt-4 text-lg font-semibold text-slate-900">{benefit.title}</h3>
+                <p className="mt-2 text-slate-600 leading-relaxed">{benefit.text}</p>
               </motion.article>
             ))}
           </div>
         </section>
 
-        <section id="cta" className="flex min-h-[calc(100svh_-_var(--header-height))] items-center bg-slate-950 px-4 py-10 sm:px-6 lg:px-8">
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+        <section id="cta" className="flex min-h-[calc(100svh_-_var(--header-height))] items-center bg-slate-900 px-4 py-10 sm:px-6 lg:px-8">
+          <div className="mx-auto grid w-full pt-20 max-w-7xl items-center gap-10 lg:gap-12 lg:grid-cols-[0.95fr_1.05fr]">
             <motion.div {...fadeUp} className="text-center lg:text-left">
               <p className="text-sm font-bold uppercase tracking-[0.22em] text-cyan-300">Inquiry</p>
-              <h2 className="mt-4 text-3xl font-bold leading-tight text-white sm:text-4xl">
+              <h2 className="mt-4 text-4xl font-bold leading-tight text-white sm:text-5xl">
                 Ready to streamline your municipal sports program?
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-slate-300 lg:mx-0">
+              <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-300 lg:mx-0">
                 Contact us for municipal organizer access, coach and facilitator roles, player registration guidance, payment system integration, or scheduling and bracket generation support.
               </p>
-              <div className="mt-7 grid gap-3 text-left sm:grid-cols-2 lg:max-w-2xl">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-slate-200">
-                  <Mail className="text-cyan-300" size={22} />
+              <div className="mt-7 grid gap-4 text-left sm:grid-cols-2">
+                <div className="rounded-xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-5 text-slate-100 backdrop-blur-sm transition hover:border-cyan-300/50 hover:from-white/15">
+                  <Mail className="text-cyan-300" size={24} />
                   <p className="mt-3 text-sm font-semibold text-white">Email support</p>
-                  <p className="mt-1 text-sm text-slate-400">organizers@sportshub.local</p>
+                  <p className="mt-1 text-sm text-slate-300">organizers@sportshub.local</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-slate-200">
-                  <Phone className="text-cyan-300" size={22} />
+                <div className="rounded-xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-5 text-slate-200 backdrop-blur-sm transition hover:border-cyan-300/50 hover:from-white/15">
+                  <Phone className="text-cyan-300" size={24} />
                   <p className="mt-3 text-sm font-semibold text-white">Community desk</p>
-                  <p className="mt-1 text-sm text-slate-400">Event, team, and role inquiries</p>
+                  <p className="mt-1 text-sm text-slate-300">Event, team, and role inquiries</p>
                 </div>
               </div>
             </motion.div>
 
-            <motion.form {...fadeUp} onSubmit={handleInquirySubmit} className="rounded-[1.75rem] border border-white/10 bg-white p-5 shadow-2xl shadow-cyan-950/30 sm:p-7">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-2 text-sm font-bold text-slate-700">
+            <motion.form {...fadeUp} onSubmit={handleInquirySubmit} className="rounded-3xl border border-white/10 bg-gradient-to-br from-white to-slate-50 p-6 shadow-2xl shadow-cyan-950/20 sm:p-8">
+              <div className="grid gap-4 flex flex-col">
+                <label className="grid gap-1 text-sm font-semibold text-slate-700">
                   Full name
-                  <input required className="min-h-12 rounded-2xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" type="text" name="name" placeholder="Your name" />
+                  <input 
+                    required 
+                    className="px-4 py-2 rounded-lg border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" 
+                    type="text"
+                    name="name" 
+                    placeholder="Your name" 
+                  />
                 </label>
-                <label className="grid gap-2 text-sm font-bold text-slate-700">
+                <label className="grid gap-1 text-sm font-semibold text-slate-700">
                   Email
-                  <input required className="min-h-12 rounded-2xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" type="email" name="email" placeholder="you@example.com" />
+                  <input 
+                    required 
+                    className="px-4 py-2 rounded-lg border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" 
+                    type="email" 
+                    name="email" 
+                    placeholder="you@example.com" 
+                  />
                 </label>
-                <label className="grid gap-2 text-sm font-bold text-slate-700">
+                <label className="grid gap-1 text-sm font-semibold text-slate-700">
                   Role
-                  <select required className="min-h-12 rounded-2xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" name="role" defaultValue="">
+                  <select 
+                    required 
+                    className="px-4 py-2 rounded-lg border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" 
+                  >
                     <option value="" disabled>Select role</option>
                     <option>Community Organizer</option>
                     <option>Coach</option>
@@ -350,9 +368,9 @@ export default function LandingPage({ authModal }) {
                     <option>Researcher</option>
                   </select>
                 </label>
-                <label className="grid gap-2 text-sm font-bold text-slate-700">
+                <label className="grid gap-1 text-sm font-semibold text-slate-700">
                   Inquiry type
-                  <select required className="min-h-12 rounded-2xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" name="type" defaultValue="">
+                  <select required className="px-4 py-2 rounded-lg border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" name="type" defaultValue="">
                     <option value="" disabled>Select topic</option>
                     <option>Organizer access</option>
                     <option>Coach/Facilitator role</option>
@@ -363,36 +381,37 @@ export default function LandingPage({ authModal }) {
                   </select>
                 </label>
               </div>
-              <label className="mt-4 grid gap-2 text-sm font-bold text-slate-700">
+              <label className="mt-5 grid gap-2.5 text-sm font-semibold text-slate-700">
                 Message
-                <textarea required className="min-h-32 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base font-medium text-slate-950 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" name="message" placeholder="Tell us what you need help with." />              </label>
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <button type="submit" className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-cyan-500 px-6 font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-400">
+                <textarea 
+                  required 
+                  className="px-4 py-2 resize-none rounded-lg border border-slate-200 bg-white px-4 py-3 text-base font-medium text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100" 
+                  name="message" 
+                  rows="4"
+                  placeholder="Tell us what you need help with." 
+                />              
+                </label>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <button type="submit" className="inline-flex px-4 py-2.5 cursor-pointer flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-600 px-6 font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:shadow-xl hover:from-cyan-600 hover:to-cyan-700 active:scale-95">
                   Send Inquiry <Send size={18} />
                 </button>
-                <button
-                  type="button"
-                  onClick={(event) => openAuthModal(event, PUBLIC_ROUTES.signUp)}
-                  className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-slate-200 px-6 font-bold text-slate-700 transition hover:border-cyan-300 hover:text-slate-950"
-                >
-                  Create Account
-                </button>
+             
               </div>
             </motion.form>
           </div>
                   </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white px-4 py-10 sm:px-6 lg:px-8">
+      <footer className="border-t border-slate-200 bg-gradient-to-b from-white to-slate-50 px-4 py-12 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <Logo onHome={navigateHome} />
-          <div className="flex flex-wrap gap-5 text-sm font-medium text-slate-600">
+          <div className="flex flex-wrap gap-6 text-sm font-medium text-slate-600">
             {['Home', 'Features', 'About', 'CTA'].map((item) => (
               <button
                 type="button"
                 key={item}
                 onClick={(event) => handleSectionNav(event, `#${item.toLowerCase()}`)}
-                className="hover:text-slate-950"
+                className="transition hover:text-cyan-600"
               >
                 {item}
               </button>
@@ -400,7 +419,7 @@ export default function LandingPage({ authModal }) {
           </div>
           <div className="flex gap-3">
             {[Share2, Network, PanelsTopLeft].map((SocialIcon, index) => (
-              <button key={index} type="button" className="grid h-10 w-10 place-items-center rounded-full border border-slate-200 text-slate-600 transition hover:border-cyan-300 hover:text-slate-950" aria-label="Social media profile">
+              <button key={index} type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-600" aria-label="Social media profile">
                 <SocialIcon size={18} />
               </button>
             ))}
@@ -415,9 +434,9 @@ export default function LandingPage({ authModal }) {
 function SectionHeading({ eyebrow, title, description }) {
   return (
     <motion.div {...fadeUp} className="mx-auto max-w-7xl px-4 text-left sm:px-6 lg:px-8">
-      <p className="text-sm font-bold uppercase tracking-[0.22em] text-cyan-600">{eyebrow}</p>
-      <h2 className="mt-2 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">{title}</h2>
-      <p className="mt-4 text-lg leading-8 text-slate-600">
+      <p className="text-sm font-bold uppercase tracking-[0.24em] text-cyan-600">{eyebrow}</p>
+      <h2 className="mt-3 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl lg:text-5xl">{title}</h2>
+      <p className="mt-5 text-lg leading-relaxed text-slate-600">
         {description}
       </p>
     </motion.div>

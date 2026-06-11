@@ -187,13 +187,25 @@ service cloud.firestore {
       && (!request.resource.data.diff(resource.data).changedKeys().hasAny(['status']) || request.resource.data.status in ['APPROVED', 'REJECTED']);
     }
 
+    function validScheduleArray() {
+      return !('schedule' in request.resource.data)
+        || (
+          request.resource.data.schedule is list
+          && (
+            request.resource.data.schedule.size() == 0
+            || request.resource.data.schedule[0].gameNumber is number
+          )
+        )
+    }
+
     function facilitatorScheduleOnly() {
       return request.resource.data.diff(resource.data).changedKeys().hasOnly([
         'schedule',
         'bracketGeneratedAt',
         'updatedAt',
       ])
-      && resource.data.facilitatorId == request.auth.uid;
+      && resource.data.facilitatorId == request.auth.uid
+      && validScheduleArray();
     }
 
     function coachFeeUpdateOnly() {
@@ -313,7 +325,7 @@ service cloud.firestore {
       
       allow create: if isOrganizer()
         && request.resource.data.createdBy == request.auth.uid
-        && request.resource.data.teamStructure is map
+        && (request.resource.data.teamStructure is map || request.resource.data.teamStructure == null)
         && request.resource.data.status in ['ACTIVE', 'ARCHIVED'];
       allow update, delete: if isOrganizer();
     }

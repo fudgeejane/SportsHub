@@ -26,14 +26,13 @@ import { useGlobalLoading } from './useGlobalLoading.jsx'
 
 export { AuthContext, ROLES, STATUSES }
 
-// Use Firebase Hosting domain for email action links
-// The page will be hosted on Firebase and redirect to Vercel after success
-const AUTH_ACTION_URL = 'https://sportshub-ffba8.firebaseapp.com/__/auth/action'
+export const APP_RETURN_URL = 'https://sports-hub-khaki.vercel.app'
+export const FIREBASE_AUTH_ACTION_URL = 'https://sportshub-ffba8.firebaseapp.com/__/auth/action'
 
 // ActionCodeSettings for email verification and password reset
-const authActionCodeSettings = {
-  url: AUTH_ACTION_URL,
-  handleCodeInApp: false, // Must be false to enable redirects to our custom URL
+export const authActionCodeSettings = {
+  url: APP_RETURN_URL,
+  handleCodeInApp: false,
 }
 
 export function buildUserRecord(firebaseUser, role = ROLES.PLAYER, displayName = '') {
@@ -265,7 +264,7 @@ export function useAuth() {
         } else if (signInError.code === 'auth/user-disabled') {
           toastError('Invalid credentials')
         } else {
-          toastError(`✗ Sign in failed: ${signInError.message}`)
+          toastError(`Sign in failed: ${signInError.message}`)
         }
         throw signInError
       }
@@ -347,15 +346,15 @@ export function useAuth() {
         
         // Handle common Firebase auth errors
         if (error.code === 'auth/email-already-in-use') {
-          toastError('✗ Email already in use. Please sign in instead.')
+          toastError('Invalid credentials')
         } else if (error.code === 'auth/invalid-email') {
-          toastError('✗ Invalid email address')
+          toastError('Invalid credentials')
         } else if (error.code === 'auth/weak-password') {
           toastError('✗ Password is too weak. Use at least 6 characters.')
         } else if (error.code === 'permission-denied') {
-          toastError('✗ Permission denied. Please check Firestore rules.')
+          toastError('It seems there is an issue with our server connection. Please try again later or contact support.')
         } else {
-          toastError(`✗ Signup failed: ${error.message || 'Please try again'}`)
+          toastError(`Please try again later`)
         }
         throw error
       }
@@ -367,9 +366,9 @@ export function useAuth() {
     try {
       await applyActionCode(auth, oobCode)
       if (auth.currentUser) await firebaseSignOut(auth)
-      toastSuccess('✓ Email verified successfully!')
+      toastSuccess('Email verified successfully!')
     } catch (error) {
-      toastError(`✗ Email verification failed: ${error.message}`)
+      toastError(`Email verification failed`)
       throw error
     }
   }, [])
@@ -387,15 +386,15 @@ export function useAuth() {
         }
 
         await refreshUser()
-        toastSuccess('✓ Signed in with Google successfully')
+        toastSuccess('Signed in with Google successfully')
         return credential.user
       } catch (error) {
         if (error.code === 'auth/popup-closed-by-user') {
-          toastError('✗ Sign in cancelled')
+          toastError('Sign in cancelled')
         } else if (error.code === 'auth/popup-blocked') {
-          toastError('✗ Popup blocked. Please allow popups for this site.')
+          toastError('Popup blocked. Please allow popups for this site.')
         } else {
-          toastError(`✗ Google sign in failed: ${error.message}`)
+          toastError(`Google sign in failed: ${error.message}`)
         }
         throw error
       }
@@ -406,9 +405,8 @@ export function useAuth() {
   const signOut = useCallback(async () => {
     try {
       await firebaseSignOut(auth)
-      toastSuccess('✓ Signed out successfully')
     } catch (error) {
-      toastError(`✗ Sign out failed: ${error.message}`)
+      toastError(`Sign out failed, please try again later.`)
       throw error
     }
   }, [])
@@ -417,12 +415,12 @@ export function useAuth() {
     try {
       if (!auth.currentUser) throw new Error('No authenticated user found.')
       await firebaseSendEmailVerification(auth.currentUser, authActionCodeSettings)
-      toastSuccess('✓ Verification email sent! Check your inbox.')
+      toastSuccess('Verification email sent. Check your inbox.')
     } catch (error) {
       if (error.code === 'auth/too-many-requests') {
-        toastError('✗ Too many requests. Please wait before trying again.')
+        toastError('Too many requests. Please wait before trying again.')
       } else {
-        toastError(`✗ Failed to send verification email: ${error.message}`)
+        toastError(`Failed to send verification email.`)
       }
       throw error
     }
@@ -431,14 +429,14 @@ export function useAuth() {
   const forgotPassword = useCallback(async (email) => {
     try {
       await sendPasswordResetEmail(auth, email, authActionCodeSettings)
-      toastSuccess('✓ Password reset email sent! Check your inbox.')
+      toastSuccess('Password reset email sent! Check your inbox.')
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
-        toastError('✗ No account found with this email')
+        toastError('Invalid credentials')
       } else if (error.code === 'auth/invalid-email') {
-        toastError('✗ Invalid email address')
+        toastError('Invalid credentials')
       } else {
-        toastError(`✗ Failed to send reset email: ${error.message}`)
+        toastError(`Failed to send reset email.`)
       }
       throw error
     }
@@ -448,22 +446,22 @@ export function useAuth() {
     try {
       if (actionCode) {
         await confirmPasswordReset(auth, actionCode, newPassword)
-        toastSuccess('✓ Password reset successfully! You can now sign in.')
+        toastSuccess('Password reset successfully! You can now sign in.')
         return
       }
 
       if (!auth.currentUser) throw new Error('Use the reset link from your email or sign in before changing your password.')
       await updatePassword(auth.currentUser, newPassword)
-      toastSuccess('✓ Password updated successfully!')
+      toastSuccess('Password updated successfully!')
     } catch (error) {
       if (error.code === 'auth/weak-password') {
-        toastError('✗ Password is too weak. Use at least 6 characters.')
+        toastError('Password is too weak. Use at least 6 characters.')
       } else if (error.code === 'auth/expired-action-code') {
-        toastError('✗ Reset link expired. Please request a new one.')
+        toastError('Reset link expired. Please request a new one.')
       } else if (error.code === 'auth/invalid-action-code') {
-        toastError('✗ Invalid reset link. Please request a new one.')
+        toastError('Invalid reset link. Please request a new one.')
       } else {
-        toastError(`✗ Password reset failed: ${error.message}`)
+        toastError(`Password reset failed: ${error.message}`)
       }
       throw error
     }
@@ -472,9 +470,9 @@ export function useAuth() {
   const updateUser = useCallback(async (uid, updates) => {
     try {
       await updateUserRecord(uid, updates)
-      toastSuccess('✓ Profile updated successfully')
+      toastSuccess('Profile updated successfully')
     } catch (error) {
-      toastError(`✗ Update failed: ${error.message}`)
+      toastError(`Update failed: ${error.message}`)
       throw error
     }
   }, [])

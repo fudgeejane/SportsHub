@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { KeyRound, Link as LinkIcon, Loader2, Phone, Save, ShieldCheck, UserRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import defaultAvatar from '../assets/default-avatar.svg'
+import defaultAvatar from '../assets/DefaultAvatar.jpg'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { toastError, toastSuccess } from '../utils/toast'
 

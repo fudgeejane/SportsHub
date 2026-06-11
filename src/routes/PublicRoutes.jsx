@@ -99,6 +99,11 @@ export const publicRoutes = [
     element={<AuthActionPage />}
   />,
   <Route
+    key={PUBLIC_ROUTES.firebaseAuthAction}
+    path={PUBLIC_ROUTES.firebaseAuthAction}
+    element={<AuthActionPage />}
+  />,
+  <Route
     key={PUBLIC_ROUTES.emailVerified}
     path={PUBLIC_ROUTES.emailVerified}
     element={<EmailVerificationSuccessPage />}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { BookOpenText, ChevronDown, ChevronUp, LogOut, Menu, Settings, X, Triangle } from 'lucide-react'
-import defaultAvatar from '../../assets/default-avatar.svg'
+import defaultAvatar from '../../assets/DefaultAvatar.jpg'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import { getAllowedNav } from '../../routes/navConfig'
 import { PUBLIC_ROUTES } from '../../routes/public-routes'

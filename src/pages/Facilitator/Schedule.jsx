@@ -11,6 +11,7 @@ export default function FacilitatorSchedulePage() {
   const { currentUser } = useAuth()
   const { events } = useEvents()
   const brackets = useBrackets(selectedEvent?.id || '')
+  const { eventTeams, schedulableTeams, canSchedule, schedule, bracket, loading } = brackets
 
   const myEvents = useMemo(
     () => events.filter((e) => e.status !== 'ARCHIVED' && e.facilitatorId === currentUser?.uid),
@@ -31,54 +32,62 @@ export default function FacilitatorSchedulePage() {
       <section className="">
        
 
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mb-4">
-          {myEvents.map((event) => {
-            const isSelected = selectedEvent?.id === event.id
+        {loading ? (
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mb-4">
+            {[1, 2, 3].map((placeholder) => (
+              <div key={placeholder} className="animate-pulse rounded-2xl border border-slate-200 bg-slate-100 p-6" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mb-4">
+            {myEvents.map((event) => {
+              const isSelected = selectedEvent?.id === event.id
 
-            return (
-              <button
-                key={event.id}
-                type="button"
-                onClick={() => handleEventClick(event)}
-                className={`rounded-2xl border cursor-pointer p-4 text-left transition ${
-                  isSelected
-                    ? 'border-blue-500 bg-blue-50 shadow-lg'
-                    : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <h3 className="font-black text-slate-950">{event.name}</h3>
-                    <p className="mt-1 text-sm text-slate-600">{event.sportName}</p>
+              return (
+                <button
+                  key={event.id}
+                  type="button"
+                  onClick={() => handleEventClick(event)}
+                  className={`rounded-2xl border cursor-pointer p-4 text-left transition ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50 shadow-lg'
+                      : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <h3 className="font-black text-slate-950">{event.name}</h3>
+                      <p className="mt-1 text-sm text-slate-600">{event.sportName}</p>
+                    </div>
+                    <Trophy className={`h-5 w-5 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`} />
                   </div>
-                  <Trophy className={`h-5 w-5 ${isSelected ? 'text-blue-600' : 'text-slate-400'}`} />
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5" />
-                    <span>{formatDate(event.startDate) || 'TBA'}</span>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>{formatDate(event.startDate) || 'TBA'}</span>
+                    </div>
+                    {event.endDate && event.endDate !== event.startDate ? (
+                      <>
+                        <span>-</span>
+                        <span>{formatDate(event.endDate)}</span>
+                      </>
+                    ) : null}
                   </div>
-                  {event.endDate && event.endDate !== event.startDate ? (
-                    <>
-                      <span>-</span>
-                      <span>{formatDate(event.endDate)}</span>
-                    </>
-                  ) : null}
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">
-                    {event.status || 'ACTIVE'}
-                  </span>
-                </div>
-              </button>
-            )
-          })}
-          {!myEvents.length ? (
-            <div className="col-span-full rounded-2xl bg-slate-50 px-4 py-8 text-center">
-              <p className="text-sm font-semibold text-slate-500">No events assigned to you.</p>
-            </div>
-          ) : null}
-        </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">
+                      {event.status || 'ACTIVE'}
+                    </span>
+                  </div>
+                </button>
+              )
+            })}
+            {!myEvents.length ? (
+              <div className="col-span-full rounded-2xl bg-slate-50 px-4 py-8 text-center">
+                <p className="text-sm font-semibold text-slate-500">No events assigned to you.</p>
+              </div>
+            ) : null}
+          </div>
+        )}
       </section>
 
       {/* Bracket Section */}
@@ -93,15 +102,15 @@ export default function FacilitatorSchedulePage() {
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700">
-                <Users className="mb-0.5 inline h-3.5 w-3.5" /> {brackets.eventTeams.length} teams
+                <Users className="mb-0.5 inline h-3.5 w-3.5" /> {eventTeams.length} teams
               </span>
               <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
-                ✓ {brackets.schedulableTeams.length} payment-ready
+                ✓ {schedulableTeams.length} payment-ready
               </span>
             </div>
           </div>
 
-          {brackets.canSchedule && !brackets.schedule.length ? (
+          {canSchedule && !schedule.length ? (
             <button
               type="button"
               onClick={() => brackets.generateBracket()}
@@ -119,9 +128,10 @@ export default function FacilitatorSchedulePage() {
           ) : null}
 
           <ScheduleBracket 
-            bracket={brackets.bracket} 
+            bracket={bracket} 
             event={selectedEvent}
             onEditMatch={brackets.updateMatch}
+            loading={loading}
           />
         </section>
       ) : null}

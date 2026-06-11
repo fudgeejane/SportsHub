@@ -36,7 +36,13 @@ export default function CoachSchedulesPage() {
       system.events
         .flatMap((event) =>
           (event.schedule || [])
-            .filter((match) => teamAppearsInMatch(match, coachTeamIds))
+            .filter((match) =>
+              teamAppearsInMatch(match, coachTeamIds) &&
+              match.matchDate &&
+              match.startTime &&
+              match.endTime &&
+              match.venue,
+            )
             .map((match) => ({
               ...match,
               eventId: event.id,
@@ -123,7 +129,7 @@ export default function CoachSchedulesPage() {
                 </div>
                 <div className="md:text-right">
                   <p className="text-sm font-black text-blue-700">{formatDate(match.eventDate) || 'No date set'}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-600">{formatTime(match.time) || 'Time TBD'}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-600">{formatTime(match.startTime) || 'Time TBD'}</p>
                   {match.round ? <p className="mt-1 text-xs font-black uppercase text-slate-500">Round {match.round}</p> : null}
                 </div>
               </div>

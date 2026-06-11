@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import SportFormModal from '../../components/organizer/SportFormModal'
-import { normalizeTeamStructure } from '../../constants/teamStructure'
+import { normalizeTeamStructure, isValidTeamStructure } from '../../constants/teamStructure'
 import { useSportsSystem } from '../../hooks/useSportsSystem.jsx'
 import { MoreVertical, PlusCircle, Volleyball, Users } from 'lucide-react'
 
@@ -61,34 +61,34 @@ export default function OrganizerSportsPage() {
           ) : system.sports.length ? (
             system.sports.map((sport) => {
               const structure = normalizeTeamStructure(sport.teamStructure || {})
-              const isTeam = Boolean(sport.teamStructure)
+              const isTeam = sport.teamStructure && isValidTeamStructure(sport.teamStructure)
 
               return (
                 <article key={sport.id} className="group rounded-xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <h3 className="truncate text-lg font-semibold text-slate-950">{sport.name}</h3>
-                      <div className="mt-4 flex flex-wrap items-center gap-1 text-sm">
-                        <div className='flex items center gap-2 text-slate-600'>
-                          <Volleyball className="w-4 h-4" />
-                          <span>
-                            {isTeam ? 'Team sport' : 'Solo sport'}
-                          </span>
+                      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600">
+                        <div className="flex items-center gap-2">
+                          <Volleyball className="h-4 w-4" />
+                          <span>{isTeam ? 'Team Sport' : 'Individual Sport'}</span>
                         </div>
+
                         {isTeam ? (
-                          <div className='flex items center gap-2 text-slate-600'>
-                          <Users className="w-4 h-4" />
-                          <span>
-                            {structure.minPlayersPerTeam}-{structure.maxPlayersPerTeam} players per team
-                          </span>
-                        </div>
-                         
-                        ) : 
-                          <span className='flex items center gap-2 text-slate-600'>
-                            <Users className="w-4 h-4" />
-                            Individual sport
-                          </span>
-                        }
+                          <>
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              <span>
+                                {structure.minPlayersPerTeam}–{structure.maxPlayersPerTeam} Players / Team
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            <span>Individual Competition</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="relative">
@@ -112,9 +112,9 @@ export default function OrganizerSportsPage() {
                           <button
                             type="button"
                             className="block w-full px-4 py-2 text-left text-sm cursor-pointer font-semibold text-slate-700 hover:bg-slate-50"
-                            onClick={() => runMenuAction(() => system.archiveSport(sport.id))}
+                            onClick={() => runMenuAction(() => system.deleteSport(sport.id))}
                           >
-                            Archive
+                            Delete sport
                           </button>
                         </div>
                       ) : null}

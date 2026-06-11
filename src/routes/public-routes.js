@@ -5,6 +5,7 @@ export const PUBLIC_ROUTES = {
   forgotPassword: '/forgot-password',
   resetPassword: '/reset-password',
   authAction: '/auth/action',
+  firebaseAuthAction: '/__/auth/action',
   emailVerified: '/email-verified',
   passwordResetSuccess: '/password-reset-success',
   verifyEmail: '/verify-email',
